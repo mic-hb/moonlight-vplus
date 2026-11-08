@@ -250,11 +250,11 @@ class PinchScrollClassifierTest {
         val xa0 = startX0 - 30f
         val xa1 = startX1 + 30f
 
-        val small = newClassifier(10f) // minimum 20, pinchAmount 30 qualifies
+        val small = newClassifier(10f) // pinch minimum 10, pinchAmount 30 qualifies
         small.beginAtStart()
         assertEquals(GestureDecision.PINCH, small.update(50L, xa0, startY, xa1, startY))
 
-        val big = newClassifier(20f) // minimum 40, pinchAmount 30 does not
+        val big = newClassifier(40f) // pinch minimum 40, pinchAmount 30 does not
         big.beginAtStart()
         assertEquals(GestureDecision.UNDECIDED, big.update(50L, xa0, startY, xa1, startY))
         assertEquals(GestureDecision.UNDECIDED, big.update(5000L, xa0, startY, xa1, startY))
@@ -533,5 +533,17 @@ class PinchScrollClassifierTest {
         val c = newSwitching()
         c.beginAtStart()
         assertEquals(GestureDecision.PINCH, c.scrollThenSpread(spread = 90f, steps = 20))
+    }
+
+    @Test
+    fun t33_smallPinchStartsAtOneTouchSlop() {
+        // Slop 10: the pinch minimum is 10 px per finger, the scroll minimum stays 20.
+        val c = newClassifier()
+        c.beginAtStart()
+        assertEquals(GestureDecision.PINCH, c.update(30L, startX0 - 12f, startY, startX1 + 12f, startY))
+        val s = newClassifier()
+        s.beginAtStart()
+        // The same travel as a slide of 12 px is below the scroll minimum.
+        assertEquals(GestureDecision.UNDECIDED, s.update(30L, startX0 + 12f, startY, startX1 + 12f, startY))
     }
 }

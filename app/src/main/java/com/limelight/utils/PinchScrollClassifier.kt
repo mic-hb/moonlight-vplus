@@ -52,6 +52,12 @@ data class ClassifierConfig(
         /** Guess. */
         const val DEFAULT_MAX_UNDECIDED_MS = 120L
 
+        /**
+         * Guess. Lowered from 2 to 1 on 2026-11-08 after the owner felt a dead zone when starting
+         * a tiny pinch. The Android scale detector has its own span slop on top of this.
+         */
+        const val PINCH_MIN_SLOP_FACTOR = 1f
+
         /** Guess. Higher than the first decision ratio, so a wobble does not flip the mode. */
         const val DEFAULT_SWITCH_RATIO = 2.0f
 
@@ -68,7 +74,7 @@ data class ClassifierConfig(
                 "touchSlopPx must be finite and > 0: $touchSlopPx"
             }
             return ClassifierConfig(
-                pinchMinPx = 2f * touchSlopPx,
+                pinchMinPx = PINCH_MIN_SLOP_FACTOR * touchSlopPx,
                 scrollMinPx = 2f * touchSlopPx,
                 allowSwitch = allowSwitch,
                 switchMinPx = 2f * touchSlopPx,
