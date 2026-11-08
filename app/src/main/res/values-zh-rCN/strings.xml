@@ -1216,7 +1216,7 @@
 
     <!-- 双击拖动 -->
     <string name="title_enable_double_click_drag">启用触控板双击拖动</string>
-    <string name="summary_enable_double_click_drag">双击并按住后可拖动选择。</string>
+    <string name="summary_enable_double_click_drag">开启：双击并按住拖动，普通的按住不再拖动。关闭：按住即可拖动。</string>
 
     <!-- 双击时间阈值 -->
     <string name="title_seekbar_double_tap_time_threshold">双击时间阈值</string>

@@ -879,7 +879,7 @@
     <string name="title_list_mic_icon_color">麥克風圖示顏色</string>
     <string name="summary_list_mic_icon_color">選擇麥克風按鈕圖示的配色。</string>
     <string name="title_enable_double_click_drag">觸控板雙擊拖曳</string>
-    <string name="summary_enable_double_click_drag">雙擊後按住即可拖曳或框選。</string>
+    <string name="summary_enable_double_click_drag">開啟：雙擊後按住拖曳，一般的按住不再拖曳。關閉：按住即可拖曳。</string>
     <string name="title_seekbar_double_tap_time_threshold">雙擊間隔</string>
     <string name="summary_seekbar_double_tap_time_threshold">調整兩次輕觸仍會被辨識為雙擊的最長間隔。</string>
     <string name="dialog_seekbar_double_tap_time_threshold">數值越大，雙擊越容易觸發。</string>

@@ -188,9 +188,18 @@ class RelativeTouchContext(
 
     override fun getActionIndex(): Int = actionIndex
 
+    /**
+     * Finger travel on the glass per normalized unit. Normalized coordinates are divided by the
+     * zoom, so without this the tap, move and drag thresholds would grow with the zoom (spec 1.3
+     * CM-12). Only the cursor-follow camera mode compensates, the old behavior is untouched.
+     */
+    private fun screenScale(): Float =
+        if (virtualCursor != null) targetView.scaleX.coerceAtLeast(1f) else 1f
+
     private fun isWithinTapBounds(touchX: Int, touchY: Int): Boolean {
-        val xDelta = Math.abs(touchX - originalTouchX)
-        val yDelta = Math.abs(touchY - originalTouchY)
+        val scale = screenScale()
+        val xDelta = Math.abs(touchX - originalTouchX) * scale
+        val yDelta = Math.abs(touchY - originalTouchY) * scale
         return xDelta <= TAP_MOVEMENT_THRESHOLD && yDelta <= TAP_MOVEMENT_THRESHOLD
     }
 
@@ -258,8 +267,9 @@ class RelativeTouchContext(
 
             if (prefConfig.enableDoubleClickDrag) {
                 val timeSinceLastTap = eventTime - lastTapUpTime
-                val xDelta = Math.abs(eventX - lastTapUpX)
-                val yDelta = Math.abs(eventY - lastTapUpY)
+                val scale = screenScale()
+                val xDelta = Math.abs(eventX - lastTapUpX) * scale
+                val yDelta = Math.abs(eventY - lastTapUpY) * scale
 
                 if (actionIndex == 0 && timeSinceLastTap <= DOUBLE_TAP_TIME_THRESHOLD &&
                     xDelta <= DOUBLE_TAP_MOVEMENT_THRESHOLD && yDelta <= DOUBLE_TAP_MOVEMENT_THRESHOLD
@@ -277,7 +287,9 @@ class RelativeTouchContext(
                 }
             }
 
-            if (actionIndex == 0) {
+            // With the double-tap drag option on, that is the only way to drag. Tap and hold stays
+            // a plain press (owner decision 2026-11-08), so the two never fight.
+            if (actionIndex == 0 && !prefConfig.enableDoubleClickDrag) {
                 // Start the timer for engaging a drag
                 startDragTimer()
             }
@@ -370,8 +382,9 @@ class RelativeTouchContext(
 
         // 决策点2：如果在"待定"状态下移动，说明用户意图是"双击拖拽"
         if (isPotentialDoubleClick) {
-            val xDelta = Math.abs(eventX - originalTouchX)
-            val yDelta = Math.abs(eventY - originalTouchY)
+            val scale = screenScale()
+            val xDelta = Math.abs(eventX - originalTouchX) * scale
+            val yDelta = Math.abs(eventY - originalTouchY) * scale
             if (xDelta > DRAG_START_THRESHOLD || yDelta > DRAG_START_THRESHOLD) {
                 //  用户移动了，说明是拖拽，取消"按住确认拖拽"计时器
                 cancelDoubleTapHoldTimer()
@@ -704,7 +717,7 @@ class RelativeTouchContext(
             cancelDragTimer()
             return
         }
-        distanceMoved += Math.sqrt(Math.pow((eventX - lastTouchX).toDouble(), 2.0) + Math.pow((eventY - lastTouchY).toDouble(), 2.0))
+        distanceMoved += Math.sqrt(Math.pow((eventX - lastTouchX).toDouble(), 2.0) + Math.pow((eventY - lastTouchY).toDouble(), 2.0)) * screenScale()
         if (distanceMoved >= TAP_DISTANCE_THRESHOLD) {
             confirmedMove = true
             cancelDragTimer()

@@ -1317,7 +1317,7 @@
     <string name="title_capability_diagnostic">Возможности видео</string>
     <string name="summary_capability_diagnostic">Декодеры, форматы HDR, режимы экрана и возможности цвета.</string>
     <string name="title_enable_double_click_drag">Перенос двойным касанием</string>
-    <string name="summary_enable_double_click_drag">Двойное касание с удержанием для перетаскивания</string>
+    <string name="summary_enable_double_click_drag">Включено: перетаскивание двойным касанием с удержанием, а обычное касание с удержанием больше не перетаскивает. Выключено: перетаскивание касанием с удержанием.</string>
     <string name="title_seekbar_double_tap_time_threshold">Интервал двойного касания</string>
     <string name="summary_seekbar_double_tap_time_threshold">Время распознавания двойного касания</string>
     <string name="dialog_seekbar_double_tap_time_threshold">Чем больше интервал, тем проще выполнить двойное касание.</string>

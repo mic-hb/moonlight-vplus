@@ -1544,7 +1544,7 @@ Tap again to replace it.</string>
 
     <!-- Double-click drag -->
     <string name="title_enable_double_click_drag">Enable touchpad double-tap drag</string>
-    <string name="summary_enable_double_click_drag">Double-tap and hold to drag selection</string>
+    <string name="summary_enable_double_click_drag">On: double-tap and hold to drag, and plain tap and hold no longer drags. Off: tap and hold to drag.</string>
 
     <!-- Double-tap time threshold -->
     <string name="title_seekbar_double_tap_time_threshold">Double-tap time threshold</string>
