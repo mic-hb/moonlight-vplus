@@ -28,6 +28,9 @@ import com.limelight.nvstream.input.MouseButtonPacket
 import com.limelight.nvstream.jni.MoonBridge
 import com.limelight.preferences.PreferenceConfiguration
 import com.limelight.ui.StreamView
+import com.limelight.utils.ClassifierConfig
+import com.limelight.utils.GestureDecision
+import com.limelight.utils.PinchScrollClassifier
 import kotlin.math.*
 
 internal inline fun containsStylusTool(pointerCount: Int, toolTypeAt: (Int) -> Int): Boolean {
@@ -81,6 +84,18 @@ class TouchInputHandler(private val game: Game) {
     private var twoFingerMoved = false
     private var twoFingerStartX = 0f
     private var twoFingerStartY = 0f
+
+    // TeamViewer style touch (spec 1.2). Built only when the preference is on (CL-08).
+    private val pinchScrollClassifier: PinchScrollClassifier by lazy {
+        PinchScrollClassifier(
+            ClassifierConfig.fromTouchSlop(ViewConfiguration.get(game).scaledTouchSlop.toFloat())
+        )
+    }
+    // Preference value is read at ACTION_DOWN so a change applies from the next gesture.
+    private var teamViewerGestureActive = false
+    private var classifierRunning = false
+    private var zoomRouted = false
+    private var classifierBeginTime = 0L
 
     private var lastAbsTouchUpTime = 0L
     private var lastAbsTouchDownTime = 0L
@@ -534,6 +549,8 @@ class TouchInputHandler(private val game: Game) {
 
                 val actionIndex = event.actionIndex
 
+                if (handleTeamViewerStyleTouch(event)) return true
+
                 // 三指手势特殊处理
                 if (event.actionMasked == MotionEvent.ACTION_POINTER_DOWN && event.pointerCount == 3) {
                     multiFingerDownTime = event.eventTime
@@ -653,6 +670,75 @@ class TouchInputHandler(private val game: Game) {
             return true
         }
         return false
+    }
+
+    /**
+     * Pinch versus scroll decision for two fingers in Trackpad mode (spec 1.2). Returns true when
+     * the event is fully handled here. Returning false lets the baseline contexts run, which is
+     * also what happens for every event of a gesture decided SCROLL.
+     */
+    private fun handleTeamViewerStyleTouch(event: MotionEvent): Boolean {
+        val action = event.actionMasked
+        if (action == MotionEvent.ACTION_DOWN) {
+            teamViewerGestureActive = game.prefConfig.teamViewerStyleTouch &&
+                game.prefConfig.touchscreenTrackpad
+            endTeamViewerGesture()
+        }
+        if (!teamViewerGestureActive) return false
+
+        val zoom = game.panZoomHandler
+        when (action) {
+            MotionEvent.ACTION_DOWN -> zoom.handleTrackpadTouchEvent(event)
+            MotionEvent.ACTION_POINTER_DOWN -> {
+                if (event.pointerCount == 2) {
+                    pinchScrollClassifier.begin(
+                        event.eventTime, event.getX(0), event.getY(0), event.getX(1), event.getY(1)
+                    )
+                    classifierRunning = true
+                    classifierBeginTime = event.eventTime
+                    zoom.handleTrackpadTouchEvent(event)
+                } else {
+                    // Third finger: the baseline cancels all contexts (B7).
+                    endTeamViewerGesture()
+                }
+            }
+            MotionEvent.ACTION_MOVE -> {
+                if (!classifierRunning || event.pointerCount != 2) return false
+                if (pinchScrollClassifier.decision == GestureDecision.SCROLL) return false
+                zoom.handleTrackpadTouchEvent(event)
+                val before = pinchScrollClassifier.decision
+                val decision = pinchScrollClassifier.update(
+                    event.eventTime, event.getX(0), event.getY(0), event.getX(1), event.getY(1)
+                )
+                if (before == GestureDecision.UNDECIDED && decision != GestureDecision.UNDECIDED) {
+                    // Tuning log, numbers only. Remove in cleanup (spec 1.0 batch 8).
+                    LimeLog.info("TV touch decision=$decision after ${event.eventTime - classifierBeginTime} ms")
+                    // D9: a decided gesture can never end as a two-finger tap right click.
+                    twoFingerMoved = true
+                    if (decision == GestureDecision.PINCH) {
+                        for (tc in touchContextMap) tc?.cancelTouch()
+                        zoom.setTrackpadZoomAllowed(true)
+                        zoomRouted = true
+                    }
+                }
+                // Hold back (UNDECIDED) and PINCH never reach the contexts. SCROLL does, from now on.
+                return decision != GestureDecision.SCROLL
+            }
+            MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                if (classifierRunning || zoomRouted) zoom.handleTrackpadTouchEvent(event)
+                endTeamViewerGesture()
+            }
+        }
+        return false
+    }
+
+    private fun endTeamViewerGesture() {
+        if (classifierRunning || zoomRouted) {
+            pinchScrollClassifier.reset()
+            game.panZoomHandler.setTrackpadZoomAllowed(false)
+        }
+        classifierRunning = false
+        zoomRouted = false
     }
 
     private fun handleTouchInput(

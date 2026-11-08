@@ -157,6 +157,8 @@
     <string name="category_input_settings">輸入</string>
     <string name="title_checkbox_touchscreen_trackpad">將觸控式螢幕作為觸控板使用</string>
     <string name="summary_checkbox_touchscreen_trackpad">如果啟用，則將觸控式螢幕作為觸控板使用。 如果停用，則觸控式螢幕直接控制滑鼠游標。</string>
+    <string name="title_teamviewer_style_touch">TeamViewer 風格觸控</string>
+    <string name="summary_teamviewer_style_touch">在觸控板模式下，雙指張合可縮放，雙指同向滑動可捲動。關閉後恢復原有行為。</string>
     <string name="title_checkbox_touch_keyboard_auto_invoke">自動彈出電腦觸摸鍵盤</string>
     <string name="title_checkbox_remote_ime_auto_show">遠端文字方塊自動彈出本機鍵盤</string>
     <string name="summary_checkbox_remote_ime_auto_show">串流的電腦在文字方塊獲得焦點時自動開啟本機鍵盤（Android 11 及以上）。畫面上的觸控手勢仍用於操作遠端電腦。</string>

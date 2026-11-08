@@ -813,6 +813,11 @@
                     android:summary="@string/summary_checkbox_touchscreen_trackpad"
                     android:defaultValue="true" />
                 <CheckBoxPreference
+                    android:key="pref_teamviewer_style_touch"
+                    android:title="@string/title_teamviewer_style_touch"
+                    android:summary="@string/summary_teamviewer_style_touch"
+                    android:defaultValue="true" />
+                <CheckBoxPreference
                     android:key="checkbox_screen_ds5_single_tap_to_click"
                     android:title="@string/title_ds5_single_tap_to_click"
                     android:summary="@string/summary_ds5_single_tap_to_click"

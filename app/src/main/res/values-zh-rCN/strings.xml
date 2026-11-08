@@ -272,6 +272,8 @@
     <string name="category_input_settings">输入</string>
     <string name="title_checkbox_touchscreen_trackpad">将触控屏作为触控板使用</string>
     <string name="summary_checkbox_touchscreen_trackpad">如果启用，则将触控屏作为触控板使用。如果禁用，则启用多点触控模式。</string>
+    <string name="title_teamviewer_style_touch">TeamViewer 风格触控</string>
+    <string name="summary_teamviewer_style_touch">在触控板模式下，双指张合可缩放，双指同向滑动可滚动。关闭后恢复原有行为。</string>
     <string name="title_checkbox_touch_keyboard_auto_invoke">自动弹出电脑触摸键盘</string>
     <string name="summary_checkbox_touch_keyboard_auto_invoke">启用后，串流的电脑在文本框获得焦点时会自动弹出其触摸键盘（需要带有虚拟触摸屏的 Sunshine 主机）。</string>
     <string name="title_checkbox_remote_ime_auto_show">远程文本框自动弹出本地键盘</string>

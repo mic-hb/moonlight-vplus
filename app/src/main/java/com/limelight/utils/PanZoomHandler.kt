@@ -30,6 +30,11 @@ class PanZoomHandler(
     private var userTransformActive = false
     var onUserTransform: (() -> Unit)? = null
 
+    // Trackpad pinch mode (spec 1.2). Only the scale detector is fed, and onScale is gated
+    // until the classifier decides PINCH. False in the old Pan and Zoom toggle mode.
+    private var trackpadDetectorMode = false
+    private var trackpadZoomAllowed = false
+
     init {
         scaleGestureDetector = ScaleGestureDetector(context, ScaleListener())
         gestureDetector = GestureDetector(context, GestureListener())
@@ -42,8 +47,30 @@ class PanZoomHandler(
     }
 
     fun handleTouchEvent(motionEvent: MotionEvent) {
+        if (trackpadDetectorMode) {
+            trackpadDetectorMode = false
+            trackpadZoomAllowed = false
+            scaleGestureDetector.isQuickScaleEnabled = true
+        }
         scaleGestureDetector.onTouchEvent(motionEvent)
         gestureDetector.onTouchEvent(motionEvent)
+    }
+
+    /**
+     * Trackpad mode feed: scale detector only, so one finger never pans the view directly and
+     * double-tap-and-drag stays a drag select (quick scale off).
+     */
+    fun handleTrackpadTouchEvent(motionEvent: MotionEvent) {
+        if (!trackpadDetectorMode) {
+            trackpadDetectorMode = true
+            scaleGestureDetector.isQuickScaleEnabled = false
+        }
+        scaleGestureDetector.onTouchEvent(motionEvent)
+    }
+
+    /** True once the classifier decided PINCH, false at gesture end or on any other decision. */
+    fun setTrackpadZoomAllowed(allowed: Boolean) {
+        trackpadZoomAllowed = allowed
     }
 
     private fun updateDimensions(): Boolean {
@@ -140,6 +167,8 @@ class PanZoomHandler(
 
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
+            // Returning true keeps the detector's span current, so opening the gate does not jump.
+            if (trackpadDetectorMode && !trackpadZoomAllowed) return true
             val previousX = childX
             val previousY = childY
             val previousScale = scaleFactor
