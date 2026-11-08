@@ -147,4 +147,39 @@ class VirtualCursorModelTest {
         // Float accumulation, not exact, but it must stay close to the 100 px of real travel.
         assertEquals(1100f, m.x, 0.5f)
     }
+
+    // Change listener (spec 1.3 batch 4: the camera follows the model)
+
+    @Test
+    fun listenerRunsOnRealChangesOnly() {
+        val m = VirtualCursorModel(1000, 600)
+        var calls = 0
+        m.onChanged = { calls++ }
+        m.moveBy(5f, 0f)
+        assertEquals(1, calls)
+        m.moveBy(0f, 0f) // nothing moves
+        assertEquals(1, calls)
+        m.moveBy(Float.NaN, Float.NaN) // ignored input
+        assertEquals(1, calls)
+        m.moveBy(-99999f, 0f)
+        assertEquals(2, calls)
+        m.moveBy(-5f, 0f) // already at the clamp
+        assertEquals(2, calls)
+    }
+
+    @Test
+    fun listenerRunsOnAreaChangeAndReset() {
+        val m = VirtualCursorModel(1000, 600)
+        var calls = 0
+        m.onChanged = { calls++ }
+        m.setArea(1000, 600) // same size
+        assertEquals(0, calls)
+        m.setArea(500, 300)
+        assertEquals(1, calls)
+        m.moveBy(10f, 10f)
+        m.reset()
+        assertEquals(3, calls)
+        m.reset() // already centered
+        assertEquals(3, calls)
+    }
 }

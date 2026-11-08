@@ -35,6 +35,12 @@ class PanZoomHandler(
     private var trackpadDetectorMode = false
     private var trackpadZoomAllowed = false
 
+    // Cursor-follow camera (spec 1.3 batch 4). Active in the trackpad mode when a cursor model
+    // exists. Then a pinch changes only the scale and the camera places the picture so the cursor
+    // is at the viewport center. The old finger pivot code stays for the old Pan and Zoom mode.
+    private val camera = CursorFollowCamera(maxScale = MAX_SCALE)
+    private var cursorModel: VirtualCursorModel? = null
+
     init {
         scaleGestureDetector = ScaleGestureDetector(context, ScaleListener())
         gestureDetector = GestureDetector(context, GestureListener())
@@ -66,6 +72,35 @@ class PanZoomHandler(
             scaleGestureDetector.isQuickScaleEnabled = false
         }
         scaleGestureDetector.onTouchEvent(motionEvent)
+    }
+
+    /** Gives the camera the cursor to follow. Null leaves the old finger pivot behavior. */
+    fun setCursorModel(model: VirtualCursorModel?) {
+        cursorModel?.onChanged = null
+        cursorModel = model
+        model?.onChanged = { followCursor() }
+    }
+
+    private fun cameraMode(): Boolean = trackpadDetectorMode && cursorModel != null
+
+    /** Moves the picture so the cursor stays at the viewport center. Cursor moves are not a user pan. */
+    private fun followCursor() {
+        val model = cursorModel ?: return
+        if (!trackpadDetectorMode || scaleFactor <= 1f) return
+        placeWithCamera(model)
+    }
+
+    private fun placeWithCamera(model: VirtualCursorModel) {
+        if (!updateDimensions()) return
+        camera.place(
+            model.x, model.y, scaleFactor,
+            streamView.width.toFloat(), streamView.height.toFloat(),
+            parentWidth, parentHeight,
+            streamView.left.toFloat(), streamView.top.toFloat(),
+        )
+        childX = camera.offsetX
+        childY = camera.offsetY
+        applyTransform()
     }
 
     /** True once the classifier decided PINCH, false at gesture end or on any other decision. */
@@ -129,6 +164,13 @@ class PanZoomHandler(
     }
 
     fun handleSurfaceChange() {
+        val model = cursorModel
+        if (userTransformActive && model != null && cameraMode()) {
+            // The ratio to fit stays. Only the viewport changed, so ask the camera again.
+            parent = streamView.parent as? View
+            placeWithCamera(model)
+            return
+        }
         if (!userTransformActive) {
             // DisplayPositionManager owns the base placement until the user pans or zooms.
             // View.left/top exclude our temporary translation and therefore preserve every
@@ -169,6 +211,15 @@ class PanZoomHandler(
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             // Returning true keeps the detector's span current, so opening the gate does not jump.
             if (trackpadDetectorMode && !trackpadZoomAllowed) return true
+            val model = cursorModel
+            if (model != null && trackpadDetectorMode) {
+                val before = scaleFactor
+                scaleFactor = camera.nextScale(scaleFactor, detector.scaleFactor)
+                userTransformActive = scaleFactor > 1f
+                placeWithCamera(model)
+                if (scaleFactor != before) onUserTransform?.invoke()
+                return true
+            }
             val previousX = childX
             val previousY = childY
             val previousScale = scaleFactor

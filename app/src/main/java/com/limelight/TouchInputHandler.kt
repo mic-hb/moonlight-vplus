@@ -95,6 +95,8 @@ class TouchInputHandler(private val game: Game) {
     // Preference value is read at ACTION_DOWN so a change applies from the next gesture.
     private var teamViewerGestureActive = false
     private var classifierRunning = false
+    // True when a cursor model exists: the camera follows the cursor, see getNormalizedCoordinates.
+    private var cursorFollowCamera = false
     private var zoomRouted = false
     private var classifierBeginTime = 0L
 
@@ -1618,6 +1620,11 @@ class TouchInputHandler(private val game: Game) {
         val scaleY = streamView.scaleY
         if (scaleX == 0f || scaleY == 0f) return floatArrayOf(rawX, rawY)
 
+        // Cursor-follow camera: the picture slides under a still finger, so subtracting its
+        // position would turn that slide into finger movement and feed back into the cursor.
+        // Only deltas are used in this mode, so dividing by the scale alone is enough.
+        if (cursorFollowCamera) return floatArrayOf(rawX / scaleX, rawY / scaleY)
+
         return floatArrayOf(
             (rawX - streamView.x) / scaleX,
             (rawY - streamView.y) / scaleY
@@ -1712,6 +1719,8 @@ class TouchInputHandler(private val game: Game) {
         } else {
             null
         }
+        cursorFollowCamera = sharedCursor != null
+        game.panZoomHandler.setCursorModel(sharedCursor)
         for (i in 0 until TOUCH_CONTEXT_LENGTH) {
             absoluteTouchContextMap[i] = AbsoluteTouchContext(conn, i, streamView)
             relativeTouchContextMap[i] = RelativeTouchContext(conn, i, streamView, prefConfig).also {

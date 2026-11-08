@@ -24,10 +24,19 @@ class VirtualCursorModel(areaWidth: Int, areaHeight: Int) {
     var y: Float = this.areaHeight / 2f
         private set
 
+    /**
+     * Called after the position or the area changed, so the camera can follow (spec 1.3 CM-06).
+     * Not called when a call changes nothing.
+     */
+    var onChanged: (() -> Unit)? = null
+
     /** Adds a delta in stream-area pixels and clamps to 0 until the last pixel. */
     fun moveBy(dx: Float, dy: Float) {
+        val oldX = x
+        val oldY = y
         if (dx.isFinite()) x = (x + dx).coerceIn(0f, (areaWidth - 1).toFloat())
         if (dy.isFinite()) y = (y + dy).coerceIn(0f, (areaHeight - 1).toFloat())
+        if (x != oldX || y != oldY) onChanged?.invoke()
     }
 
     /** Keeps the position as the same fraction of the area, so a resize does not teleport it. */
@@ -42,11 +51,15 @@ class VirtualCursorModel(areaWidth: Int, areaHeight: Int) {
         areaHeight = newHeight
         x = x.coerceIn(0f, (areaWidth - 1).toFloat())
         y = y.coerceIn(0f, (areaHeight - 1).toFloat())
+        onChanged?.invoke()
     }
 
     fun reset() {
+        val oldX = x
+        val oldY = y
         x = areaWidth / 2f
         y = areaHeight / 2f
+        if (x != oldX || y != oldY) onChanged?.invoke()
     }
 
     /** Position for the absolute packet, rounded and inside the area. */
