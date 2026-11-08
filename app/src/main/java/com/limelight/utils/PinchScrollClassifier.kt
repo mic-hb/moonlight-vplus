@@ -17,14 +17,21 @@ enum class GestureDecision { UNDECIDED, PINCH, SCROLL }
  * @property scrollMinPx least scrollAmount before SCROLL is allowed
  * @property dominanceRatio how many times larger one amount must be than the other, at least 1
  * @property maxUndecidedMs hold-back cap, afterwards the larger amount wins
- * @property allowSwitch reserved for switching after a decision (spec 1.2 D8), not built, keep false
+ * @property allowSwitch whether a decided gesture may switch to the other mode (spec 1.2 D8,
+ *   batch 3c). TeamViewer switches many times in one gesture (E4, seen by the owner)
+ * @property switchMinPx least amount of the other motion, inside the window, before a switch
+ * @property switchRatio how many times larger the other motion must be than the current one
+ * @property switchWindowMs only motion inside this recent window counts for a switch
  */
 data class ClassifierConfig(
     val pinchMinPx: Float,
     val scrollMinPx: Float,
     val dominanceRatio: Float = DEFAULT_DOMINANCE_RATIO,
     val maxUndecidedMs: Long = DEFAULT_MAX_UNDECIDED_MS,
-    val allowSwitch: Boolean = false,
+    val allowSwitch: Boolean = true,
+    val switchMinPx: Float = pinchMinPx,
+    val switchRatio: Float = DEFAULT_SWITCH_RATIO,
+    val switchWindowMs: Long = DEFAULT_SWITCH_WINDOW_MS,
 ) {
     init {
         require(pinchMinPx.isFinite() && pinchMinPx > 0f) { "pinchMinPx must be finite and > 0: $pinchMinPx" }
@@ -33,6 +40,9 @@ data class ClassifierConfig(
             "dominanceRatio must be finite and >= 1: $dominanceRatio"
         }
         require(maxUndecidedMs > 0L) { "maxUndecidedMs must be > 0: $maxUndecidedMs" }
+        require(switchMinPx.isFinite() && switchMinPx > 0f) { "switchMinPx must be finite and > 0: $switchMinPx" }
+        require(switchRatio.isFinite() && switchRatio >= 1f) { "switchRatio must be finite and >= 1: $switchRatio" }
+        require(switchWindowMs > 0L) { "switchWindowMs must be > 0: $switchWindowMs" }
     }
 
     companion object {
@@ -42,18 +52,26 @@ data class ClassifierConfig(
         /** Guess. */
         const val DEFAULT_MAX_UNDECIDED_MS = 120L
 
+        /** Guess. Higher than the first decision ratio, so a wobble does not flip the mode. */
+        const val DEFAULT_SWITCH_RATIO = 2.0f
+
+        /** Guess. */
+        const val DEFAULT_SWITCH_WINDOW_MS = 200L
+
         /**
          * Derives the pixel minimums from the device touch slop so they scale with screen density.
          * The caller passes ViewConfiguration.scaledTouchSlop. The factor 2 is a Guess that
          * matches the span slop of ScaleGestureDetector.
          */
-        fun fromTouchSlop(touchSlopPx: Float): ClassifierConfig {
+        fun fromTouchSlop(touchSlopPx: Float, allowSwitch: Boolean = true): ClassifierConfig {
             require(touchSlopPx.isFinite() && touchSlopPx > 0f) {
                 "touchSlopPx must be finite and > 0: $touchSlopPx"
             }
             return ClassifierConfig(
                 pinchMinPx = 2f * touchSlopPx,
                 scrollMinPx = 2f * touchSlopPx,
+                allowSwitch = allowSwitch,
+                switchMinPx = 2f * touchSlopPx,
             )
         }
     }
@@ -67,8 +85,12 @@ data class ClassifierConfig(
  * centroid travel d. A pure pinch of d pixels per finger gives span change 2d, so halving the
  * span change puts the two on the same scale.
  *
- * The decision is locked until [reset], because switching mid gesture is not built in v1.
- * No allocation per call: only primitive arguments and fields.
+ * After the first decision the classifier keeps watching (when [ClassifierConfig.allowSwitch]).
+ * It compares only the motion inside a short recent window, so a long scroll does not make a
+ * later pinch impossible. A switch needs the other motion to pass a minimum and to beat the
+ * current one by a larger ratio than the first decision, which stops a wobble from flipping the
+ * mode. After a switch the window starts fresh. [reset] clears everything.
+ * No allocation per call: only primitive arguments and fixed arrays.
  */
 class PinchScrollClassifier(private val config: ClassifierConfig) {
 
@@ -81,10 +103,19 @@ class PinchScrollClassifier(private val config: ClassifierConfig) {
     private var startCx = 0f
     private var startCy = 0f
 
+    // Ring buffer of recent samples for switching. Fixed size, so update() never allocates.
+    private val histT = LongArray(HISTORY_SIZE)
+    private val histSpan = FloatArray(HISTORY_SIZE)
+    private val histCx = FloatArray(HISTORY_SIZE)
+    private val histCy = FloatArray(HISTORY_SIZE)
+    private var histStart = 0
+    private var histCount = 0
+
     /** Call at the second finger down. Positions are raw screen pixels. */
     fun begin(timeMs: Long, x0: Float, y0: Float, x1: Float, y1: Float) {
         decision = GestureDecision.UNDECIDED
         active = true
+        clearHistory()
         startTimeMs = timeMs
         startSpan = span(x0, y0, x1, y1)
         startCx = (x0 + x1) * 0.5f
@@ -93,7 +124,11 @@ class PinchScrollClassifier(private val config: ClassifierConfig) {
 
     /** Feed one sample. Returns the current decision. Before [begin] it stays UNDECIDED. */
     fun update(timeMs: Long, x0: Float, y0: Float, x1: Float, y1: Float): GestureDecision {
-        if (!active || decision != GestureDecision.UNDECIDED) return decision
+        if (!active) return decision
+        if (decision != GestureDecision.UNDECIDED) {
+            if (config.allowSwitch) evaluateSwitch(timeMs, x0, y0, x1, y1)
+            return decision
+        }
 
         val pinchAmount = abs(span(x0, y0, x1, y1) - startSpan) * 0.5f
         val dx = (x0 + x1) * 0.5f - startCx
@@ -116,13 +151,78 @@ class PinchScrollClassifier(private val config: ClassifierConfig) {
             // A tie goes to SCROLL (Guess: a wrong scroll is probably cheaper than a wrong zoom).
             decision = if (pinchAmount > scrollAmount) GestureDecision.PINCH else GestureDecision.SCROLL
         }
+        if (decision != GestureDecision.UNDECIDED) {
+            clearHistory()
+            pushSample(timeMs, span(x0, y0, x1, y1), (x0 + x1) * 0.5f, (y0 + y1) * 0.5f)
+        }
         return decision
+    }
+
+    private fun evaluateSwitch(timeMs: Long, x0: Float, y0: Float, x1: Float, y1: Float) {
+        val s = span(x0, y0, x1, y1)
+        val cx = (x0 + x1) * 0.5f
+        val cy = (y0 + y1) * 0.5f
+        // A backwards timestamp is ignored, like in the first decision.
+        if (histCount > 0 && timeMs < histT[index(histCount - 1)]) return
+
+        // Forget samples that left the window, then compare with the oldest one that is left.
+        while (histCount > 0 && timeMs - histT[histStart] > config.switchWindowMs) {
+            histStart = (histStart + 1) % HISTORY_SIZE
+            histCount--
+        }
+        if (histCount > 0) {
+            val a = histStart
+            val pinchAmount = abs(s - histSpan[a]) * 0.5f
+            val dx = cx - histCx[a]
+            val dy = cy - histCy[a]
+            val scrollAmount = sqrt(dx * dx + dy * dy)
+            val ratio = config.switchRatio
+            val min = config.switchMinPx
+            val next = when (decision) {
+                GestureDecision.SCROLL ->
+                    if (pinchAmount >= min && pinchAmount >= ratio * scrollAmount) GestureDecision.PINCH else decision
+                GestureDecision.PINCH ->
+                    if (scrollAmount >= min && scrollAmount >= ratio * pinchAmount) GestureDecision.SCROLL else decision
+                GestureDecision.UNDECIDED -> decision
+            }
+            if (next != decision) {
+                decision = next
+                clearHistory()
+            }
+        }
+        pushSample(timeMs, s, cx, cy)
+    }
+
+    private fun index(offset: Int) = (histStart + offset) % HISTORY_SIZE
+
+    private fun pushSample(timeMs: Long, span: Float, cx: Float, cy: Float) {
+        if (histCount == HISTORY_SIZE) {
+            histStart = (histStart + 1) % HISTORY_SIZE
+            histCount--
+        }
+        val i = index(histCount)
+        histT[i] = timeMs
+        histSpan[i] = span
+        histCx[i] = cx
+        histCy[i] = cy
+        histCount++
+    }
+
+    private fun clearHistory() {
+        histStart = 0
+        histCount = 0
     }
 
     /** Forget the gesture. Call when a finger lifts, a third finger lands, or on cancel. */
     fun reset() {
         decision = GestureDecision.UNDECIDED
         active = false
+        clearHistory()
+    }
+
+    private companion object {
+        /** About 250 ms of samples at 120 Hz. When full, the oldest sample is dropped. */
+        const val HISTORY_SIZE = 64
     }
 
     private fun span(x0: Float, y0: Float, x1: Float, y1: Float): Float {

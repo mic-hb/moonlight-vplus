@@ -705,24 +705,30 @@ class TouchInputHandler(private val game: Game) {
             }
             MotionEvent.ACTION_MOVE -> {
                 if (!classifierRunning || event.pointerCount != 2) return false
-                if (pinchScrollClassifier.decision == GestureDecision.SCROLL) return false
+                // The detector sees every two finger move, also during SCROLL, so a later switch
+                // to PINCH starts from the current finger span and not from a stale one.
                 zoom.handleTrackpadTouchEvent(event)
                 val before = pinchScrollClassifier.decision
                 val decision = pinchScrollClassifier.update(
                     event.eventTime, event.getX(0), event.getY(0), event.getX(1), event.getY(1)
                 )
-                if (before == GestureDecision.UNDECIDED && decision != GestureDecision.UNDECIDED) {
+                if (decision != before) {
                     // Tuning log, numbers only. Remove in cleanup (spec 1.0 batch 8).
-                    LimeLog.info("TV touch decision=$decision after ${event.eventTime - classifierBeginTime} ms")
+                    LimeLog.info("TV touch decision=$before->$decision after ${event.eventTime - classifierBeginTime} ms")
                     // D9: a decided gesture can never end as a two-finger tap right click.
                     twoFingerMoved = true
                     if (decision == GestureDecision.PINCH) {
                         for (tc in touchContextMap) tc?.cancelTouch()
                         zoom.setTrackpadZoomAllowed(true)
                         zoomRouted = true
+                    } else if (before == GestureDecision.PINCH) {
+                        // Back to scroll (spec 1.2 D8, batch 3c): stop the zoom and give the two
+                        // contexts a fresh two finger start at the current finger positions.
+                        zoom.setTrackpadZoomAllowed(false)
+                        restartScrollContexts(event)
                     }
                 }
-                // Hold back (UNDECIDED) and PINCH never reach the contexts. SCROLL does, from now on.
+                // Hold back (UNDECIDED) and PINCH never reach the contexts. SCROLL does.
                 return decision != GestureDecision.SCROLL
             }
             MotionEvent.ACTION_POINTER_UP, MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
@@ -731,6 +737,16 @@ class TouchInputHandler(private val game: Game) {
             }
         }
         return false
+    }
+
+    /** Mirrors the baseline DOWN and POINTER_DOWN pair, so the contexts scroll from where the fingers are now. */
+    private fun restartScrollContexts(event: MotionEvent) {
+        for (tc in touchContextMap) tc?.setPointerCount(2)
+        for (i in 0 until 2) {
+            val tc = getTouchContext(i) ?: continue
+            val coords = getNormalizedCoordinates(game.streamView, event.getX(i), event.getY(i))
+            tc.touchDownEvent(coords[0].toInt(), coords[1].toInt(), event.eventTime, true)
+        }
     }
 
     private fun endTeamViewerGesture() {

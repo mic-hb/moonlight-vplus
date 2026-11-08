@@ -18,10 +18,15 @@ class PinchScrollClassifierTest {
     private val startY = 1000f
 
     private fun newClassifier(slop: Float = 10f) =
+        PinchScrollClassifier(ClassifierConfig.fromTouchSlop(slop, allowSwitch = false))
+
+    /** Spec 1.2 batch 3c: the default config may switch after a decision. */
+    private fun newSwitching(slop: Float = 10f) =
         PinchScrollClassifier(ClassifierConfig.fromTouchSlop(slop))
 
     private fun PinchScrollClassifier.beginAtStart(timeMs: Long = 0L) =
         begin(timeMs, startX0, startY, startX1, startY)
+
 
     /**
      * Moves from the start pose by a total of (m0x, m0y) for finger 0 and (m1x, m1y) for finger 1
@@ -345,5 +350,188 @@ class PinchScrollClassifierTest {
             }
             assertEquals("pinch seed $seed", GestureDecision.PINCH, d)
         }
+    }
+
+    // ---- Batch 3c: switching after a decision (spec 1.2 D8 revised, E4 seen on TeamViewer) ----
+
+    /** Pose after a scroll of [dy] px down: fingers keep their 200 px gap. */
+    private fun PinchScrollClassifier.scrollThenSpread(spread: Float, steps: Int = 10): GestureDecision {
+        // Phase 1: scroll 60 px down.
+        drive(10, 0f, 60f, 0f, 60f)
+        // Phase 2: spread each finger by [spread] px sideways, from the scrolled pose.
+        return drive(
+            steps, -spread, 0f, spread, 0f, t0 = 100L,
+            fromX0 = startX0, fromY0 = startY + 60f, fromX1 = startX1, fromY1 = startY + 60f,
+        )
+    }
+
+    @Test
+    fun t21_scrollThenSpreadSwitchesToPinch() {
+        val c = newSwitching()
+        c.beginAtStart()
+        assertEquals(GestureDecision.SCROLL, c.drive(10, 0f, 60f, 0f, 60f))
+        val d = c.drive(
+            20, -80f, 0f, 80f, 0f, t0 = 100L,
+            fromX0 = startX0, fromY0 = startY + 60f, fromX1 = startX1, fromY1 = startY + 60f,
+        )
+        assertEquals(GestureDecision.PINCH, d)
+    }
+
+    @Test
+    fun t22_pinchThenParallelMoveSwitchesToScroll() {
+        val c = newSwitching()
+        c.beginAtStart()
+        assertEquals(GestureDecision.PINCH, c.drive(10, -60f, 0f, 60f, 0f))
+        val d = c.drive(
+            20, 0f, 120f, 0f, 120f, t0 = 100L,
+            fromX0 = startX0 - 60f, fromY0 = startY, fromX1 = startX1 + 60f, fromY1 = startY,
+        )
+        assertEquals(GestureDecision.SCROLL, d)
+    }
+
+    @Test
+    fun t23_switchesManyTimesInOneGesture() {
+        val c = newSwitching()
+        c.beginAtStart()
+        val seen = mutableListOf<GestureDecision>()
+        var t = 0L
+        var x0 = startX0; var x1 = startX1; var y = startY
+        fun move(steps: Int, m0x: Float, m0y: Float, m1x: Float, m1y: Float) {
+            val d = c.drive(steps, m0x, m0y, m1x, m1y, t0 = t, fromX0 = x0, fromY0 = y, fromX1 = x1, fromY1 = y)
+            seen.add(d)
+            t += 8L * steps + 300L // a pause longer than the window between phases
+            x0 += m0x; x1 += m1x; y += m0y
+        }
+        move(15, 0f, 80f, 0f, 80f)      // scroll
+        move(15, -50f, 0f, 50f, 0f)     // pinch
+        move(15, 0f, -80f, 0f, -80f)    // scroll
+        move(15, 50f, 0f, -50f, 0f)     // pinch in
+        move(15, 0f, 80f, 0f, 80f)      // scroll again
+        assertEquals(
+            listOf(
+                GestureDecision.SCROLL, GestureDecision.PINCH, GestureDecision.SCROLL,
+                GestureDecision.PINCH, GestureDecision.SCROLL,
+            ),
+            seen,
+        )
+    }
+
+    @Test
+    fun t24_smallWobbleDoesNotSwitch() {
+        val c = newSwitching()
+        c.beginAtStart()
+        assertEquals(GestureDecision.SCROLL, c.drive(10, 0f, 60f, 0f, 60f))
+        // 10 px spread per finger is under the 20 px switch minimum.
+        val d = c.drive(
+            10, -8f, 0f, 8f, 0f, t0 = 100L,
+            fromX0 = startX0, fromY0 = startY + 60f, fromX1 = startX1, fromY1 = startY + 60f,
+        )
+        assertEquals(GestureDecision.SCROLL, d)
+    }
+
+    @Test
+    fun t25_mixedMotionWithoutDominanceKeepsTheCurrentMode() {
+        val c = newSwitching()
+        c.beginAtStart()
+        assertEquals(GestureDecision.SCROLL, c.drive(10, 0f, 60f, 0f, 60f))
+        // Spread 30 per finger while still scrolling 40 px: spread is not 2x the scroll amount.
+        val d = c.drive(
+            15, -30f, 40f, 30f, 40f, t0 = 100L,
+            fromX0 = startX0, fromY0 = startY + 60f, fromX1 = startX1, fromY1 = startY + 60f,
+        )
+        assertEquals(GestureDecision.SCROLL, d)
+    }
+
+    @Test
+    fun t26_slowDriftOverManyWindowsDoesNotSwitch() {
+        val c = newSwitching()
+        c.beginAtStart()
+        assertEquals(GestureDecision.SCROLL, c.drive(10, 0f, 60f, 0f, 60f))
+        // 40 px spread per finger over 2 s: far below the minimum inside any 200 ms window.
+        val d = c.drive(
+            250, -40f, 0f, 40f, 0f, t0 = 100L,
+            fromX0 = startX0, fromY0 = startY + 60f, fromX1 = startX1, fromY1 = startY + 60f,
+        )
+        assertEquals(GestureDecision.SCROLL, d)
+    }
+
+    @Test
+    fun t27_lockedConfigStillLocks() {
+        val c = newClassifier() // allowSwitch = false
+        c.beginAtStart()
+        assertEquals(GestureDecision.SCROLL, c.drive(10, 0f, 60f, 0f, 60f))
+        val d = c.drive(
+            20, -80f, 0f, 80f, 0f, t0 = 100L,
+            fromX0 = startX0, fromY0 = startY + 60f, fromX1 = startX1, fromY1 = startY + 60f,
+        )
+        assertEquals(GestureDecision.SCROLL, d)
+    }
+
+    @Test
+    fun t28_noFlipBackAfterASwitchWhileSpreadingWithJitter() {
+        val c = newSwitching()
+        c.beginAtStart()
+        c.drive(10, 0f, 60f, 0f, 60f)
+        var last = GestureDecision.SCROLL
+        var changes = 0
+        var x0 = startX0
+        var x1 = startX1
+        var t = 100L
+        for (i in 1..60) {
+            x0 -= 3f
+            x1 += 3f
+            val jitter = if (i % 2 == 0) 2f else -2f
+            val now = c.update(t, x0, startY + 60f + jitter, x1, startY + 60f - jitter)
+            if (now != last) {
+                changes++
+                last = now
+            }
+            t += 8L
+        }
+        assertEquals(GestureDecision.PINCH, last)
+        assertEquals(1, changes)
+    }
+
+    @Test
+    fun t29_resetClearsSwitchHistory() {
+        val c = newSwitching()
+        c.beginAtStart()
+        c.drive(10, 0f, 60f, 0f, 60f)
+        c.reset()
+        assertEquals(GestureDecision.UNDECIDED, c.decision)
+        c.beginAtStart(timeMs = 5000L)
+        assertEquals(GestureDecision.PINCH, c.drive(10, -60f, 0f, 60f, 0f, t0 = 5000L))
+    }
+
+    @Test
+    fun t30_backwardsTimestampAfterDecisionIsSafe() {
+        val c = newSwitching()
+        c.beginAtStart()
+        assertEquals(GestureDecision.SCROLL, c.drive(10, 0f, 60f, 0f, 60f))
+        val d = c.update(1L, startX0 - 100f, startY + 60f, startX1 + 100f, startY + 60f)
+        assertEquals(GestureDecision.SCROLL, d)
+    }
+
+    @Test
+    fun t31_switchConfigIsValidated() {
+        val ok = ClassifierConfig.fromTouchSlop(10f)
+        val bad = listOf<() -> Unit>(
+            { ok.copy(switchMinPx = 0f) },
+            { ok.copy(switchMinPx = Float.NaN) },
+            { ok.copy(switchRatio = 0.5f) },
+            { ok.copy(switchRatio = Float.POSITIVE_INFINITY) },
+            { ok.copy(switchWindowMs = 0L) },
+        )
+        for (b in bad) {
+            try { b(); fail("expected IllegalArgumentException") } catch (_: IllegalArgumentException) {}
+        }
+    }
+
+    @Test
+    fun t32_unusedHelperKeepsCompilerQuiet() {
+        // scrollThenSpread is a convenience for manual traces. A big spread must switch.
+        val c = newSwitching()
+        c.beginAtStart()
+        assertEquals(GestureDecision.PINCH, c.scrollThenSpread(spread = 90f, steps = 20))
     }
 }
