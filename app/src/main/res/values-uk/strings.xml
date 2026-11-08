@@ -349,4 +349,12 @@
     <string name="summary_checkbox_reverse_resolution">Вмикайте лише якщо орієнтація або розміри зображення неправильні; може конфліктувати з поворотом відповідно до орієнтації пристрою.</string>
     <string name="summary_checkbox_rotable_screen">Автоматично синхронізує макет трансляції, коли пристрій перемикається між книжковою та альбомною орієнтацією.</string>
     <string name="layout_page_device_text_1a70f">Перемикач дотиків</string>
+    <string name="title_enable_double_click_drag">Перетягування подвійним дотиком на тачпаді</string>
+    <string name="summary_enable_double_click_drag">Увімкнено: подвійний дотик і утримання перетягують, звичайне утримання більше не перетягує. Вимкнено: перетягування утриманням.</string>
+    <string name="title_teamviewer_style_touch">Сенсорне керування як у TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">У режимі тачпада зводьте два пальці для масштабування і рухайте два пальці разом для прокручування. Вимкніть, щоб повернути попередню поведінку.</string>
+    <string name="title_stream_audio_to_client">Відтворювати звук на цьому пристрої</string>
+    <string name="summary_stream_audio_to_client">Вимкнено: звук залишається на комп\'ютері, а цей пристрій мовчить. Увімкнено: звук комп\'ютера надсилається на цей пристрій.</string>
+    <string name="title_sync_host_orientation">Обертати й екран комп\'ютера</string>
+    <string name="summary_sync_host_orientation">Коли цей пристрій обертається, змінюється й роздільна здатність та орієнтація комп\'ютера. Вимкнено: обертаються лише цей пристрій і вигляд трансляції.</string>
 </resources>

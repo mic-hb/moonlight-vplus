@@ -251,4 +251,12 @@
     <string name="summary_checkbox_reverse_resolution">Yalnızca görüntü yönü veya boyutları hatalı olduğunda etkinleştirin; cihaz döndürmeyi izleme ayarıyla çakışabilir.</string>
     <string name="summary_checkbox_rotable_screen">Cihaz dikey ve yatay yön arasında geçiş yaptığında akış düzenini otomatik olarak senkronize eder.</string>
     <string name="layout_page_device_text_1a70f">Dokunmayı değiştir</string>
+    <string name="title_enable_double_click_drag">Dokunmatik yüzeyde çift dokunarak sürükleme</string>
+    <string name="summary_enable_double_click_drag">Açık: çift dokunup basılı tutarak sürüklenir, normal basılı tutma artık sürüklemez. Kapalı: basılı tutarak sürüklenir.</string>
+    <string name="title_teamviewer_style_touch">TeamViewer tarzı dokunma</string>
+    <string name="summary_teamviewer_style_touch">Dokunmatik yüzey modunda iki parmakla yakınlaştırır, iki parmağı birlikte hareket ettirerek kaydırırsınız. Önceki davranış için kapatın.</string>
+    <string name="title_stream_audio_to_client">Sesi bu cihazda çal</string>
+    <string name="summary_stream_audio_to_client">Kapalı: ses bilgisayarda kalır ve bu cihaz sessizdir. Açık: bilgisayarın sesi bu cihaza gönderilir.</string>
+    <string name="title_sync_host_orientation">Bilgisayar ekranını da döndür</string>
+    <string name="summary_sync_host_orientation">Bu cihaz döndüğünde bilgisayarın çözünürlüğü ve yönü de değişir. Kapalı: yalnızca bu cihaz ve yayın görünümü döner.</string>
 </resources>

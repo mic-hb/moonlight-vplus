@@ -65,4 +65,12 @@
     <string name="summary_checkbox_reverse_resolution">فقط وقتی فعال کنید که جهت یا ابعاد تصویر نادرست باشد؛ ممکن است با چرخش دستگاه تداخل داشته باشد.</string>
     <string name="summary_checkbox_rotable_screen">با تغییر دستگاه بین حالت عمودی و افقی، چیدمان پخش را به‌صورت خودکار همگام می‌کند.</string>
     <string name="layout_page_device_text_1a70f">تغییر وضعیت لمس</string>
+    <string name="title_enable_double_click_drag">کشیدن با دو ضربه روی تاچ‌پد</string>
+    <string name="summary_enable_double_click_drag">روشن: دو ضربه و نگه‌داشتن می‌کشد و نگه‌داشتن معمولی دیگر نمی‌کشد. خاموش: با نگه‌داشتن می‌کشید.</string>
+    <string name="title_teamviewer_style_touch">لمس به سبک TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">در حالت تاچ‌پد با دو انگشت زوم کنید و با حرکت دو انگشت کنار هم پیمایش کنید. برای رفتار قبلی خاموش کنید.</string>
+    <string name="title_stream_audio_to_client">پخش صدا روی این دستگاه</string>
+    <string name="summary_stream_audio_to_client">خاموش: صدا روی رایانه می‌ماند و این دستگاه بی‌صدا است. روشن: صدای رایانه به این دستگاه فرستاده می‌شود.</string>
+    <string name="title_sync_host_orientation">چرخاندن صفحه رایانه هم</string>
+    <string name="summary_sync_host_orientation">وقتی این دستگاه می‌چرخد، وضوح و جهت رایانه هم تغییر می‌کند. خاموش: فقط این دستگاه و نمای جریان می‌چرخند.</string>
 </resources>

@@ -217,4 +217,12 @@
     <string name="summary_checkbox_reverse_resolution">הפעל רק כאשר כיוון התמונה או המידות שלה שגויים; עלול להתנגש עם סיבוב בהתאם למכשיר.</string>
     <string name="summary_checkbox_rotable_screen">מסנכרן אוטומטית את פריסת הסטרימינג כאשר המכשיר עובר בין מצב לאורך למצב לרוחב.</string>
     <string name="layout_page_device_text_1a70f">מתג מגע</string>
+    <string name="title_enable_double_click_drag">גרירה בהקשה כפולה בלוח המגע</string>
+    <string name="summary_enable_double_click_drag">פעיל: הקשה כפולה והחזקה גוררות, והחזקה רגילה כבר לא גוררת. כבוי: החזקה גוררת.</string>
+    <string name="title_teamviewer_style_touch">מגע בסגנון TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">במצב לוח מגע מבצעים זום בצביטה בשתי אצבעות וגוללים בהזזת שתי אצבעות יחד. כבו כדי לחזור להתנהגות הקודמת.</string>
+    <string name="title_stream_audio_to_client">הפעלת שמע במכשיר זה</string>
+    <string name="summary_stream_audio_to_client">כבוי: הקול נשאר במחשב והמכשיר הזה שותק. פעיל: הקול של המחשב נשלח למכשיר הזה.</string>
+    <string name="title_sync_host_orientation">סיבוב גם של מסך המחשב</string>
+    <string name="summary_sync_host_orientation">כשהמכשיר מסתובב, משתנים גם הרזולוציה והכיוון של המחשב. כבוי: רק המכשיר ותצוגת הזרם מסתובבים.</string>
 </resources>

@@ -236,4 +236,12 @@
     <string name="summary_checkbox_reverse_resolution">Activați numai când orientarea sau dimensiunile imaginii sunt incorecte; poate intra în conflict cu rotirea în funcție de dispozitiv.</string>
     <string name="summary_checkbox_rotable_screen">Sincronizează automat aspectul fluxului când dispozitivul comută între orientarea portret și peisaj.</string>
     <string name="layout_page_device_text_1a70f">Comutare atingere</string>
+    <string name="title_enable_double_click_drag">Tragere cu dublu atingere pe touchpad</string>
+    <string name="summary_enable_double_click_drag">Activat: dublă atingere și ținere pentru a trage, atingerea lungă obișnuită nu mai trage. Dezactivat: atingere lungă pentru a trage.</string>
+    <string name="title_teamviewer_style_touch">Atingere în stil TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">În modul touchpad, ciupește cu două degete pentru zoom și mută două degete împreună pentru derulare. Dezactivează pentru comportamentul anterior.</string>
+    <string name="title_stream_audio_to_client">Redă audio pe acest dispozitiv</string>
+    <string name="summary_stream_audio_to_client">Dezactivat: sunetul rămâne pe computer, iar acest dispozitiv e mut. Activat: sunetul computerului este trimis la acest dispozitiv.</string>
+    <string name="title_sync_host_orientation">Rotește și ecranul computerului</string>
+    <string name="summary_sync_host_orientation">Când acest dispozitiv se rotește, se schimbă și rezoluția și orientarea computerului. Dezactivat: se rotesc doar acest dispozitiv și vizualizarea fluxului.</string>
 </resources>

@@ -345,4 +345,12 @@
     <string name="summary_checkbox_reverse_resolution">Attiva solo quando l\'orientamento o le dimensioni dell\'immagine sono errati; potrebbe entrare in conflitto con la rotazione del dispositivo.</string>
     <string name="summary_checkbox_rotable_screen">Sincronizza automaticamente il layout dello streaming quando il dispositivo passa dall\'orientamento verticale a quello orizzontale e viceversa.</string>
     <string name="layout_page_device_text_1a70f">Attiva o disattiva il tocco</string>
+    <string name="title_enable_double_click_drag">Trascinamento con doppio tocco sul touchpad</string>
+    <string name="summary_enable_double_click_drag">Attivo: doppio tocco e tieni premuto per trascinare, il semplice tocco prolungato non trascina più. Disattivo: tocco prolungato per trascinare.</string>
+    <string name="title_teamviewer_style_touch">Tocco in stile TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">In modalità touchpad, pizzica con due dita per lo zoom e muovi due dita insieme per scorrere. Disattiva per il comportamento precedente.</string>
+    <string name="title_stream_audio_to_client">Riproduci audio su questo dispositivo</string>
+    <string name="summary_stream_audio_to_client">Disattivo: l\'audio resta sul computer e questo dispositivo è muto. Attivo: l\'audio del computer viene inviato a questo dispositivo.</string>
+    <string name="title_sync_host_orientation">Ruota anche lo schermo del computer</string>
+    <string name="summary_sync_host_orientation">Quando questo dispositivo ruota, cambia anche risoluzione e orientamento del computer. Disattivo: ruotano solo questo dispositivo e la vista dello stream.</string>
 </resources>

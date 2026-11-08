@@ -338,4 +338,12 @@
     <string name="summary_checkbox_reverse_resolution">Włączaj tylko wtedy, gdy orientacja lub wymiary obrazu są nieprawidłowe; może kolidować z obracaniem zgodnie z urządzeniem.</string>
     <string name="summary_checkbox_rotable_screen">Automatycznie synchronizuje układ strumienia, gdy urządzenie przełącza się między orientacją pionową i poziomą.</string>
     <string name="layout_page_device_text_1a70f">Przełącz dotyk</string>
+    <string name="title_enable_double_click_drag">Przeciąganie podwójnym dotknięciem na touchpadzie</string>
+    <string name="summary_enable_double_click_drag">Włączone: podwójne dotknięcie i przytrzymanie przeciąga, zwykłe przytrzymanie już nie przeciąga. Wyłączone: przytrzymanie przeciąga.</string>
+    <string name="title_teamviewer_style_touch">Dotyk w stylu TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">W trybie touchpada powiększasz dwoma palcami, a przewijasz, przesuwając dwa palce razem. Wyłącz, aby wrócić do poprzedniego zachowania.</string>
+    <string name="title_stream_audio_to_client">Odtwarzaj dźwięk na tym urządzeniu</string>
+    <string name="summary_stream_audio_to_client">Wyłączone: dźwięk zostaje na komputerze, a to urządzenie milczy. Włączone: dźwięk komputera jest wysyłany na to urządzenie.</string>
+    <string name="title_sync_host_orientation">Obracaj także ekran komputera</string>
+    <string name="summary_sync_host_orientation">Po obróceniu tego urządzenia zmienia też rozdzielczość i orientację komputera. Wyłączone: obracają się tylko to urządzenie i widok strumienia.</string>
 </resources>

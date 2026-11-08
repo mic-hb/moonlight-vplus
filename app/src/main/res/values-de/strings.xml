@@ -341,4 +341,12 @@
     <string name="summary_checkbox_reverse_resolution">Nur aktivieren, wenn Ausrichtung oder Abmessungen des Bildes nicht stimmen; kann mit der Drehung des Geräts in Konflikt geraten.</string>
     <string name="summary_checkbox_rotable_screen">Synchronisiert das Stream-Layout automatisch, wenn das Gerät zwischen Hoch- und Querformat wechselt.</string>
     <string name="layout_page_device_text_1a70f">Touch-Eingabe umschalten</string>
+    <string name="title_enable_double_click_drag">Touchpad-Ziehen per Doppeltipp aktivieren</string>
+    <string name="summary_enable_double_click_drag">An: Doppeltippen und halten zieht, normales Tippen und Halten zieht nicht mehr. Aus: Tippen und Halten zieht.</string>
+    <string name="title_teamviewer_style_touch">Touch-Steuerung wie TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">Im Touchpad-Modus zoomen Sie mit zwei Fingern und scrollen, indem Sie zwei Finger gemeinsam bewegen. Ausschalten stellt das bisherige Verhalten wieder her.</string>
+    <string name="title_stream_audio_to_client">Audio auf diesem Gerät wiedergeben</string>
+    <string name="summary_stream_audio_to_client">Aus: Der Ton bleibt am Computer und dieses Gerät ist stumm. An: Der Ton des Computers wird an dieses Gerät gesendet.</string>
+    <string name="title_sync_host_orientation">Auch den Computerbildschirm drehen</string>
+    <string name="summary_sync_host_orientation">Beim Drehen dieses Geräts auch Auflösung und Ausrichtung des Computers ändern. Aus: Nur dieses Gerät und die Stream-Ansicht drehen sich.</string>
 </resources>

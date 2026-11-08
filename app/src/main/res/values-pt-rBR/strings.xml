@@ -321,4 +321,12 @@
     <string name="summary_checkbox_reverse_resolution">Ative somente quando a orientação ou as dimensões da imagem estiverem incorretas; pode entrar em conflito com Seguir rotação da tela.</string>
     <string name="summary_checkbox_rotable_screen">Sincroniza automaticamente o layout do streaming quando o dispositivo alterna entre as orientações retrato e paisagem.</string>
     <string name="layout_page_device_text_1a70f">Alternar toque</string>
+    <string name="title_enable_double_click_drag">Arrastar com toque duplo no touchpad</string>
+    <string name="summary_enable_double_click_drag">Ativado: toque duplo e segurar para arrastar, o toque longo normal deixa de arrastar. Desativado: toque longo para arrastar.</string>
+    <string name="title_teamviewer_style_touch">Toque no estilo TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">No modo touchpad, faça pinça com dois dedos para dar zoom e mova dois dedos juntos para rolar. Desative para o comportamento anterior.</string>
+    <string name="title_stream_audio_to_client">Reproduzir áudio neste dispositivo</string>
+    <string name="summary_stream_audio_to_client">Desativado: o som fica no computador e este dispositivo fica mudo. Ativado: o som do computador é enviado para este dispositivo.</string>
+    <string name="title_sync_host_orientation">Girar também a tela do computador</string>
+    <string name="summary_sync_host_orientation">Ao girar este dispositivo, também altera a resolução e a orientação do computador. Desativado: só este dispositivo e a visualização do stream giram.</string>
 </resources>

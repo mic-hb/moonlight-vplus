@@ -338,4 +338,12 @@
     <string name="summary_checkbox_reverse_resolution">Aktivera endast när bildens riktning eller mått är felaktiga; kan stå i konflikt med att följa enhetens rotation.</string>
     <string name="summary_checkbox_rotable_screen">Synkroniserar automatiskt strömningslayouten när enheten växlar mellan stående och liggande orientering.</string>
     <string name="layout_page_device_text_1a70f">Växla pekinmatning</string>
+    <string name="title_enable_double_click_drag">Dra med dubbeltryck på pekplattan</string>
+    <string name="summary_enable_double_click_drag">På: dubbeltryck och håll för att dra, vanligt tryck och håll drar inte längre. Av: tryck och håll för att dra.</string>
+    <string name="title_teamviewer_style_touch">Touch i TeamViewer-stil</string>
+    <string name="summary_teamviewer_style_touch">I pekplattsläge zoomar du med två fingrar och rullar genom att flytta två fingrar tillsammans. Stäng av för det tidigare beteendet.</string>
+    <string name="title_stream_audio_to_client">Spela upp ljud på den här enheten</string>
+    <string name="summary_stream_audio_to_client">Av: ljudet stannar på datorn och den här enheten är tyst. På: datorns ljud skickas till den här enheten.</string>
+    <string name="title_sync_host_orientation">Rotera även datorns skärm</string>
+    <string name="summary_sync_host_orientation">När den här enheten roteras ändras även datorns upplösning och riktning. Av: bara den här enheten och strömvyn roterar.</string>
 </resources>

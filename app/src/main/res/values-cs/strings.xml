@@ -314,4 +314,12 @@
     <string name="summary_checkbox_reverse_resolution">Povolte pouze při nesprávné orientaci nebo rozměrech obrazu; může být v konfliktu s otáčením podle zařízení.</string>
     <string name="summary_checkbox_rotable_screen">Automaticky synchronizuje rozložení streamu při přepnutí zařízení mezi orientací na výšku a na šířku.</string>
     <string name="layout_page_device_text_1a70f">Přepínač dotyku</string>
+    <string name="title_enable_double_click_drag">Přetahování dvojitým klepnutím na touchpadu</string>
+    <string name="summary_enable_double_click_drag">Zapnuto: přetahujete dvojitým klepnutím a podržením, běžné podržení už netáhne. Vypnuto: táhne se podržením.</string>
+    <string name="title_teamviewer_style_touch">Dotykové ovládání jako TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">V režimu touchpadu přiblížíte dvěma prsty, posouváte dvěma prsty společně. Vypnutím se vrátí původní chování.</string>
+    <string name="title_stream_audio_to_client">Přehrávat zvuk na tomto zařízení</string>
+    <string name="summary_stream_audio_to_client">Vypnuto: zvuk zůstane v počítači a toto zařízení mlčí. Zapnuto: zvuk počítače se posílá do tohoto zařízení.</string>
+    <string name="title_sync_host_orientation">Otáčet i displej počítače</string>
+    <string name="summary_sync_host_orientation">Při otočení tohoto zařízení změnit také rozlišení a orientaci počítače. Vypnuto: otáčí se jen toto zařízení a obraz streamu.</string>
 </resources>

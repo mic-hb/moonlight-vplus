@@ -592,4 +592,12 @@
     <string name="mouse_axis_correction_180">Girar 180 grados</string>
     <string name="mouse_axis_correction_270">Girar 270 grados</string>
     <string name="layout_page_device_text_1a70f">Alternar entrada táctil</string>
+    <string name="title_enable_double_click_drag">Arrastrar con doble toque en el panel táctil</string>
+    <string name="summary_enable_double_click_drag">Activado: arrastra con doble toque y mantener, y el toque largo normal ya no arrastra. Desactivado: se arrastra manteniendo el toque.</string>
+    <string name="title_teamviewer_style_touch">Control táctil estilo TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">En modo panel táctil, pellizca con dos dedos para hacer zoom y mueve dos dedos juntos para desplazar. Desactívalo para recuperar el comportamiento anterior.</string>
+    <string name="title_stream_audio_to_client">Reproducir audio en este dispositivo</string>
+    <string name="summary_stream_audio_to_client">Desactivado: el sonido se queda en el ordenador y este dispositivo no suena. Activado: el sonido del ordenador se envía a este dispositivo.</string>
+    <string name="title_sync_host_orientation">Girar también la pantalla del ordenador</string>
+    <string name="summary_sync_host_orientation">Al girar este dispositivo, cambia también la resolución y la orientación del ordenador. Desactivado: solo giran este dispositivo y la vista del stream.</string>
 </resources>

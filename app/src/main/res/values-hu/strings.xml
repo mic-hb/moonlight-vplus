@@ -310,4 +310,12 @@
     <string name="summary_checkbox_reverse_resolution">Csak akkor engedélyezze, ha a kép tájolása vagy méretei hibásak; ütközhet az eszközforgatás követésével.</string>
     <string name="summary_checkbox_rotable_screen">Automatikusan szinkronizálja a stream elrendezését, amikor az eszköz álló és fekvő tájolás között vált.</string>
     <string name="layout_page_device_text_1a70f">Érintés váltása</string>
+    <string name="title_enable_double_click_drag">Érintőpad dupla koppintásos húzás</string>
+    <string name="summary_enable_double_click_drag">Be: dupla koppintás és tartás húz, a sima koppintás és tartás már nem húz. Ki: koppintás és tartás húz.</string>
+    <string name="title_teamviewer_style_touch">TeamViewer-stílusú érintés</string>
+    <string name="summary_teamviewer_style_touch">Érintőpad módban két ujjal csippentve nagyíthat, két ujjat együtt mozgatva görgethet. Kikapcsolva a korábbi viselkedés tér vissza.</string>
+    <string name="title_stream_audio_to_client">Hang lejátszása ezen az eszközön</string>
+    <string name="summary_stream_audio_to_client">Ki: a hang a számítógépen marad, ez az eszköz néma. Be: a számítógép hangja erre az eszközre kerül.</string>
+    <string name="title_sync_host_orientation">A számítógép kijelzőjének forgatása is</string>
+    <string name="summary_sync_host_orientation">Az eszköz elforgatásakor a számítógép felbontása és tájolása is változik. Ki: csak ez az eszköz és a stream nézet forog.</string>
 </resources>

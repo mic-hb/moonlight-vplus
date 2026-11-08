@@ -221,4 +221,12 @@
     <string name="summary_checkbox_reverse_resolution">Включвайте само когато ориентацията или размерите на изображението са неправилни; може да влезе в конфликт с въртенето според устройството.</string>
     <string name="summary_checkbox_rotable_screen">Автоматично синхронизира оформлението на поточното предаване, когато устройството превключва между портретна и пейзажна ориентация.</string>
     <string name="layout_page_device_text_1a70f">Превключване на докосването</string>
+    <string name="title_enable_double_click_drag">Плъзгане с двойно докосване на тъчпада</string>
+    <string name="summary_enable_double_click_drag">Включено: двойно докосване и задържане плъзга, обикновеното задържане вече не плъзга. Изключено: задържане за плъзгане.</string>
+    <string name="title_teamviewer_style_touch">Докосване като в TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">В режим на тъчпад мащабирайте с два пръста и превъртайте, като движите два пръста заедно. Изключете за предишното поведение.</string>
+    <string name="title_stream_audio_to_client">Възпроизвеждане на звука на това устройство</string>
+    <string name="summary_stream_audio_to_client">Изключено: звукът остава на компютъра, а това устройство е безшумно. Включено: звукът на компютъра се изпраща към това устройство.</string>
+    <string name="title_sync_host_orientation">Завъртане и на екрана на компютъра</string>
+    <string name="summary_sync_host_orientation">Когато това устройство се завърти, се променят и разделителната способност и ориентацията на компютъра. Изключено: въртят се само това устройство и изгледът на потока.</string>
 </resources>

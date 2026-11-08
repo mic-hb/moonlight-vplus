@@ -264,4 +264,12 @@
     <string name="summary_checkbox_reverse_resolution">Aktiver bare når bilderetningen eller -dimensjonene er feil; kan komme i konflikt med å følge enhetens rotasjon.</string>
     <string name="summary_checkbox_rotable_screen">Synkroniserer strømmelayouten automatisk når enheten bytter mellom stående og liggende retning.</string>
     <string name="layout_page_device_text_1a70f">Slå berøring av/på</string>
+    <string name="title_enable_double_click_drag">Dra med dobbelttrykk på styreflaten</string>
+    <string name="summary_enable_double_click_drag">På: dobbelttrykk og hold for å dra, vanlig trykk og hold drar ikke lenger. Av: trykk og hold for å dra.</string>
+    <string name="title_teamviewer_style_touch">Berøring i TeamViewer-stil</string>
+    <string name="summary_teamviewer_style_touch">I styreflatemodus zoomer du med to fingre og ruller ved å flytte to fingre sammen. Slå av for tidligere oppførsel.</string>
+    <string name="title_stream_audio_to_client">Spill av lyd på denne enheten</string>
+    <string name="summary_stream_audio_to_client">Av: lyden blir på datamaskinen og denne enheten er stum. På: datamaskinens lyd sendes til denne enheten.</string>
+    <string name="title_sync_host_orientation">Roter også datamaskinens skjerm</string>
+    <string name="summary_sync_host_orientation">Når denne enheten roteres, endres også datamaskinens oppløsning og retning. Av: bare denne enheten og strømvisningen roterer.</string>
 </resources>

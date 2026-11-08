@@ -351,4 +351,12 @@
     <string name="summary_checkbox_reverse_resolution">Activez uniquement si l’orientation ou les dimensions de l’image sont incorrectes ; peut entrer en conflit avec la rotation de l’appareil.</string>
     <string name="summary_checkbox_rotable_screen">Synchronise automatiquement la disposition du flux lorsque l’appareil passe du mode portrait au mode paysage, ou inversement.</string>
     <string name="layout_page_device_text_1a70f">Activer ou désactiver le tactile</string>
+    <string name="title_enable_double_click_drag">Glisser par double appui sur le pavé tactile</string>
+    <string name="summary_enable_double_click_drag">Activé : double appui puis maintien pour glisser, un simple appui long ne glisse plus. Désactivé : appui long pour glisser.</string>
+    <string name="title_teamviewer_style_touch">Contrôle tactile façon TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">En mode pavé tactile, pincez à deux doigts pour zoomer et déplacez deux doigts ensemble pour faire défiler. Désactivez pour retrouver le comportement précédent.</string>
+    <string name="title_stream_audio_to_client">Lire l\'audio sur cet appareil</string>
+    <string name="summary_stream_audio_to_client">Désactivé : le son reste sur l\'ordinateur et cet appareil est muet. Activé : le son de l\'ordinateur est envoyé à cet appareil.</string>
+    <string name="title_sync_host_orientation">Faire aussi pivoter l\'écran de l\'ordinateur</string>
+    <string name="summary_sync_host_orientation">Quand cet appareil pivote, change aussi la résolution et l\'orientation de l\'ordinateur. Désactivé : seuls cet appareil et la vue du flux pivotent.</string>
 </resources>

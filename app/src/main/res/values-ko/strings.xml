@@ -355,4 +355,12 @@
     <string name="summary_checkbox_reverse_resolution">이미지 방향이나 크기가 잘못된 경우에만 사용하세요. 기기 회전 따르기와 충돌할 수 있습니다.</string>
     <string name="summary_checkbox_rotable_screen">기기가 세로와 가로 방향 사이를 전환할 때 스트림 레이아웃을 자동으로 동기화합니다.</string>
     <string name="layout_page_device_text_1a70f">터치 입력 전환</string>
+    <string name="title_enable_double_click_drag">터치패드 더블탭 드래그</string>
+    <string name="summary_enable_double_click_drag">켜짐: 더블탭 후 누르고 있으면 드래그하며, 일반 길게 누르기는 더 이상 드래그하지 않습니다. 꺼짐: 길게 눌러 드래그합니다.</string>
+    <string name="title_teamviewer_style_touch">TeamViewer 스타일 터치</string>
+    <string name="summary_teamviewer_style_touch">터치패드 모드에서 두 손가락으로 확대/축소하고 두 손가락을 함께 움직여 스크롤합니다. 끄면 이전 동작으로 돌아갑니다.</string>
+    <string name="title_stream_audio_to_client">이 기기에서 소리 재생</string>
+    <string name="summary_stream_audio_to_client">꺼짐: 소리는 컴퓨터에 남고 이 기기는 무음입니다. 켜짐: 컴퓨터의 소리가 이 기기로 전송됩니다.</string>
+    <string name="title_sync_host_orientation">컴퓨터 화면도 함께 회전</string>
+    <string name="summary_sync_host_orientation">이 기기를 회전하면 컴퓨터의 해상도와 방향도 바꿉니다. 꺼짐: 이 기기와 스트림 화면만 회전합니다.</string>
 </resources>

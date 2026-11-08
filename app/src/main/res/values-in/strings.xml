@@ -269,4 +269,12 @@
     <string name="summary_checkbox_reverse_resolution">Aktifkan hanya jika orientasi atau dimensi gambar salah; dapat bertentangan dengan rotasi perangkat.</string>
     <string name="summary_checkbox_rotable_screen">Secara otomatis menyinkronkan tata letak streaming saat perangkat beralih antara orientasi potret dan lanskap.</string>
     <string name="layout_page_device_text_1a70f">Sakelar sentuhan</string>
+    <string name="title_enable_double_click_drag">Seret dengan ketuk dua kali pada touchpad</string>
+    <string name="summary_enable_double_click_drag">Aktif: ketuk dua kali lalu tahan untuk menyeret, ketuk tahan biasa tidak lagi menyeret. Nonaktif: ketuk tahan untuk menyeret.</string>
+    <string name="title_teamviewer_style_touch">Sentuhan gaya TeamViewer</string>
+    <string name="summary_teamviewer_style_touch">Dalam mode touchpad, cubit dengan dua jari untuk zoom dan gerakkan dua jari bersama untuk menggulir. Matikan untuk perilaku sebelumnya.</string>
+    <string name="title_stream_audio_to_client">Putar audio di perangkat ini</string>
+    <string name="summary_stream_audio_to_client">Nonaktif: suara tetap di komputer dan perangkat ini senyap. Aktif: suara komputer dikirim ke perangkat ini.</string>
+    <string name="title_sync_host_orientation">Putar juga layar komputer</string>
+    <string name="summary_sync_host_orientation">Saat perangkat ini diputar, resolusi dan orientasi komputer ikut berubah. Nonaktif: hanya perangkat ini dan tampilan stream yang berputar.</string>
 </resources>

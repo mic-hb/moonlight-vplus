@@ -230,4 +230,12 @@
     <string name="summary_checkbox_reverse_resolution">画像の向きやサイズが正しくない場合のみ有効にしてください。端末の回転に従う設定と競合する可能性があります。</string>
     <string name="summary_checkbox_rotable_screen">端末が縦向きと横向きを切り替えるとき、ストリームのレイアウトを自動的に同期します。</string>
     <string name="layout_page_device_text_1a70f">タッチ入力切り替え</string>
+    <string name="title_enable_double_click_drag">タッチパッドのダブルタップドラッグ</string>
+    <string name="summary_enable_double_click_drag">オン：ダブルタップして押し続けるとドラッグし、通常の長押しではドラッグしません。オフ：長押しでドラッグします。</string>
+    <string name="title_teamviewer_style_touch">TeamViewer風のタッチ操作</string>
+    <string name="summary_teamviewer_style_touch">タッチパッドモードで、2本指のピンチで拡大縮小し、2本指を一緒に動かしてスクロールします。オフにすると従来の動作に戻ります。</string>
+    <string name="title_stream_audio_to_client">このデバイスで音声を再生</string>
+    <string name="summary_stream_audio_to_client">オフ：音はパソコンに残り、このデバイスは無音です。オン：パソコンの音がこのデバイスに送られます。</string>
+    <string name="title_sync_host_orientation">パソコンの画面も回転する</string>
+    <string name="summary_sync_host_orientation">このデバイスを回転させると、パソコンの解像度と向きも変更します。オフ：このデバイスとストリーム表示だけが回転します。</string>
 </resources>
