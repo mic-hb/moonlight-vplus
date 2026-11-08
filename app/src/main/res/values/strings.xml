@@ -510,6 +510,8 @@
     <string name="category_input_settings">Input</string>
     <string name="title_checkbox_touchscreen_trackpad">Use the touchscreen as a trackpad</string>
     <string name="summary_checkbox_touchscreen_trackpad">If enabled, the touchscreen acts like a trackpad. If disabled, multi-point touch will be enabled.</string>
+    <string name="title_sync_host_orientation">Rotate the computer\'s display too</string>
+    <string name="summary_sync_host_orientation">When this device rotates, also change the computer\'s resolution and orientation. Off: only this device and the stream view rotate.</string>
     <string name="title_stream_audio_to_client">Play audio on this device</string>
     <string name="summary_stream_audio_to_client">Off: the sound stays on the computer and this device is silent. On: the computer\'s sound is sent to this device.</string>
     <string name="title_teamviewer_style_touch">TeamViewer style touch</string>

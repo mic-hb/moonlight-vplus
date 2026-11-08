@@ -409,7 +409,8 @@ class Game : ThemedComponentActivity(), SurfaceHolder.Callback,
             prefConfig.width,
             prefConfig.height,
             prefConfig.rotableScreen,
-            prefConfig.onscreenController || prefConfig.enableCrownFeatures
+            prefConfig.onscreenController || prefConfig.enableCrownFeatures,
+            prefConfig.syncHostOrientation
         ) { currentTargetDisplay }
         tombstonePrefs = getSharedPreferences("DecoderTombstone", 0)
 

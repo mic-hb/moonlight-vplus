@@ -272,6 +272,8 @@
     <string name="category_input_settings">输入</string>
     <string name="title_checkbox_touchscreen_trackpad">将触控屏作为触控板使用</string>
     <string name="summary_checkbox_touchscreen_trackpad">如果启用，则将触控屏作为触控板使用。如果禁用，则启用多点触控模式。</string>
+    <string name="title_sync_host_orientation">同时旋转电脑屏幕</string>
+    <string name="summary_sync_host_orientation">旋转本设备时，同时更改电脑的分辨率和方向。关闭：只旋转本设备和串流画面。</string>
     <string name="title_stream_audio_to_client">在本设备上播放声音</string>
     <string name="summary_stream_audio_to_client">关闭：声音保留在电脑上，本设备静音。开启：电脑的声音会传到本设备。</string>
     <string name="title_teamviewer_style_touch">TeamViewer 风格触控</string>

@@ -218,6 +218,12 @@
             android:title="@string/title_checkbox_rotable_screen"
             android:summary="@string/summary_checkbox_rotable_screen"
             android:defaultValue="false" />
+        <CheckBoxPreference
+            android:key="pref_sync_host_orientation"
+            android:dependency="checkbox_rotable_screen"
+            android:title="@string/title_sync_host_orientation"
+            android:summary="@string/summary_sync_host_orientation"
+            android:defaultValue="false" />
         <com.limelight.preferences.ExternalDisplayPreference
             android:key="use_external_display"
             android:title="@string/title_use_external_display"

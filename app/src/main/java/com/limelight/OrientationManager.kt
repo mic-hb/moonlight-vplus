@@ -25,6 +25,8 @@ class OrientationManager(
     private val originalHeight: Int,
     private val rotableScreen: Boolean,
     private val hasOnscreenControls: Boolean,
+    /** False: the app and the stream view rotate, but the computer's display is left alone. */
+    private val syncHostOrientation: Boolean,
     private val displayProvider: () -> Display?,
 ) {
     var connection: NvConnection? = null
@@ -227,6 +229,14 @@ class OrientationManager(
             }
             currentOrientation == lastRotation -> return
             else -> lastRotation = currentOrientation
+        }
+
+        // Owner decision 2026-11-08: by default only this device rotates, like TeamViewer. The
+        // host resolution and orientation change is an option. lastRotation is kept up to date
+        // above so turning the option on later does not replay old rotations.
+        if (!syncHostOrientation) {
+            LimeLog.info("handleRotationChange: host sync is off, not notifying the server")
+            return
         }
 
         val angle = if (isLandscape) 0 else 90

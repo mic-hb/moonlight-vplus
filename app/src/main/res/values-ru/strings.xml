@@ -454,6 +454,8 @@
     <string name="category_input_settings">Ввод</string>
     <string name="title_checkbox_touchscreen_trackpad">Экран как тачпад</string>
     <string name="summary_checkbox_touchscreen_trackpad">При включении экран работает как тачпад. При отключении доступен мультитач.</string>
+    <string name="title_sync_host_orientation">Поворачивать и экран компьютера</string>
+    <string name="summary_sync_host_orientation">При повороте этого устройства менять также разрешение и ориентацию компьютера. Выключено: поворачиваются только устройство и вид трансляции.</string>
     <string name="title_stream_audio_to_client">Звук на этом устройстве</string>
     <string name="summary_stream_audio_to_client">Выключено: звук остаётся на компьютере, а это устройство молчит. Включено: звук компьютера передаётся на это устройство.</string>
     <string name="title_teamviewer_style_touch">Сенсорное управление как в TeamViewer</string>
