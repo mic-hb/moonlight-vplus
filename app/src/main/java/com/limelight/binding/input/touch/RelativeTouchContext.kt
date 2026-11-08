@@ -10,6 +10,7 @@ import com.limelight.nvstream.NvConnection
 import com.limelight.nvstream.input.MouseButtonPacket
 import com.limelight.preferences.PreferenceConfiguration
 import com.limelight.ui.CursorView
+import com.limelight.utils.TouchScaling
 import com.limelight.utils.VirtualCursorModel
 
 class RelativeTouchContext(
@@ -198,8 +199,8 @@ class RelativeTouchContext(
 
     private fun isWithinTapBounds(touchX: Int, touchY: Int): Boolean {
         val scale = screenScale()
-        val xDelta = Math.abs(touchX - originalTouchX) * scale
-        val yDelta = Math.abs(touchY - originalTouchY) * scale
+        val xDelta = TouchScaling.toScreenUnits(Math.abs(touchX - originalTouchX).toFloat(), scale)
+        val yDelta = TouchScaling.toScreenUnits(Math.abs(touchY - originalTouchY).toFloat(), scale)
         return xDelta <= TAP_MOVEMENT_THRESHOLD && yDelta <= TAP_MOVEMENT_THRESHOLD
     }
 
@@ -268,8 +269,8 @@ class RelativeTouchContext(
             if (prefConfig.enableDoubleClickDrag) {
                 val timeSinceLastTap = eventTime - lastTapUpTime
                 val scale = screenScale()
-                val xDelta = Math.abs(eventX - lastTapUpX) * scale
-                val yDelta = Math.abs(eventY - lastTapUpY) * scale
+                val xDelta = TouchScaling.toScreenUnits(Math.abs(eventX - lastTapUpX).toFloat(), scale)
+                val yDelta = TouchScaling.toScreenUnits(Math.abs(eventY - lastTapUpY).toFloat(), scale)
 
                 if (actionIndex == 0 && timeSinceLastTap <= DOUBLE_TAP_TIME_THRESHOLD &&
                     xDelta <= DOUBLE_TAP_MOVEMENT_THRESHOLD && yDelta <= DOUBLE_TAP_MOVEMENT_THRESHOLD
@@ -383,8 +384,8 @@ class RelativeTouchContext(
         // 决策点2：如果在"待定"状态下移动，说明用户意图是"双击拖拽"
         if (isPotentialDoubleClick) {
             val scale = screenScale()
-            val xDelta = Math.abs(eventX - originalTouchX) * scale
-            val yDelta = Math.abs(eventY - originalTouchY) * scale
+            val xDelta = TouchScaling.toScreenUnits(Math.abs(eventX - originalTouchX).toFloat(), scale)
+            val yDelta = TouchScaling.toScreenUnits(Math.abs(eventY - originalTouchY).toFloat(), scale)
             if (xDelta > DRAG_START_THRESHOLD || yDelta > DRAG_START_THRESHOLD) {
                 //  用户移动了，说明是拖拽，取消"按住确认拖拽"计时器
                 cancelDoubleTapHoldTimer()
@@ -412,8 +413,16 @@ class RelativeTouchContext(
                 deltaX = Math.round(Math.abs(deltaX) * xFactor * if (eventX < lastTouchX) -1 else 1).toInt()
                 deltaY = Math.round(Math.abs(deltaY) * yFactor * if (eventY < lastTouchY) -1 else 1).toInt()
                 // Model units are stream-area pixels, so no 1280 reference factor (spec 1.3 CM-03).
-                val cursorDx = (eventX - lastTouchX) * sense.toFloat()
-                val cursorDy = (eventY - lastTouchY) * sense.toFloat()
+                val cursorZoom = screenScale()
+                val cursorDx = TouchScaling.cursorDelta(eventX - lastTouchX, sense, cursorZoom, TouchScaling.CURSOR_ZOOM_EXPONENT)
+                val cursorDy = TouchScaling.cursorDelta(eventY - lastTouchY, sense, cursorZoom, TouchScaling.CURSOR_ZOOM_EXPONENT)
+                if (virtualCursor != null && pointerCount == 2) {
+                    // Two-finger scroll sends the same remote distance for the same glass travel
+                    // at every zoom, so the normalized delta gets the zoom back (spec 1.3 D8).
+                    val zoom = screenScale()
+                    deltaX = TouchScaling.scrollDelta(eventX - lastTouchX, xFactor, zoom, TouchScaling.SCROLL_ZOOM_EXPONENT)
+                    deltaY = TouchScaling.scrollDelta(eventY - lastTouchY, yFactor, zoom, TouchScaling.SCROLL_ZOOM_EXPONENT)
+                }
 
                 if (pointerCount == 2) {
                     if (confirmedScroll) {
@@ -717,7 +726,9 @@ class RelativeTouchContext(
             cancelDragTimer()
             return
         }
-        distanceMoved += Math.sqrt(Math.pow((eventX - lastTouchX).toDouble(), 2.0) + Math.pow((eventY - lastTouchY).toDouble(), 2.0)) * screenScale()
+        distanceMoved += Math.sqrt(Math.pow((eventX - lastTouchX).toDouble(), 2.0) + Math.pow((eventY - lastTouchY).toDouble(), 2.0)).let {
+            TouchScaling.toScreenUnits(it.toFloat(), screenScale()).toDouble()
+        }
         if (distanceMoved >= TAP_DISTANCE_THRESHOLD) {
             confirmedMove = true
             cancelDragTimer()
