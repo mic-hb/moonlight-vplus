@@ -31,6 +31,7 @@ import com.limelight.ui.StreamView
 import com.limelight.utils.ClassifierConfig
 import com.limelight.utils.GestureDecision
 import com.limelight.utils.PinchScrollClassifier
+import com.limelight.utils.VirtualCursorModel
 import kotlin.math.*
 
 internal inline fun containsStylusTool(pointerCount: Int, toolTypeAt: (Int) -> Int): Boolean {
@@ -1689,9 +1690,17 @@ class TouchInputHandler(private val game: Game) {
      * 初始化触控上下文（由 Game 在 onCreate / prepareConnection 中调用）
      */
     fun initTouchContexts(conn: NvConnection, streamView: StreamView, prefConfig: PreferenceConfiguration) {
+        // One cursor model shared by every context, only in the new mode. Read once per stream.
+        val sharedCursor = if (prefConfig.teamViewerStyleTouch && prefConfig.touchscreenTrackpad) {
+            VirtualCursorModel(streamView.width, streamView.height)
+        } else {
+            null
+        }
         for (i in 0 until TOUCH_CONTEXT_LENGTH) {
             absoluteTouchContextMap[i] = AbsoluteTouchContext(conn, i, streamView)
-            relativeTouchContextMap[i] = RelativeTouchContext(conn, i, streamView, prefConfig)
+            relativeTouchContextMap[i] = RelativeTouchContext(conn, i, streamView, prefConfig).also {
+                it.setVirtualCursorModel(sharedCursor)
+            }
         }
         touchContextMap = if (!prefConfig.touchscreenTrackpad) absoluteTouchContextMap else relativeTouchContextMap
         game.touchpadInputSettings.apply()

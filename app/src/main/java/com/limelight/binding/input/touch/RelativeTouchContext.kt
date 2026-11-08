@@ -10,6 +10,7 @@ import com.limelight.nvstream.NvConnection
 import com.limelight.nvstream.input.MouseButtonPacket
 import com.limelight.preferences.PreferenceConfiguration
 import com.limelight.ui.CursorView
+import com.limelight.utils.VirtualCursorModel
 
 class RelativeTouchContext(
     private val conn: NvConnection,
@@ -108,13 +109,21 @@ class RelativeTouchContext(
     /** 已正常结束但仍等待点击队列清空的完整左键拖拽序列 */
     private val completedQueuedDrags = java.util.ArrayDeque<QueuedLeftDrag>()
 
-    private data class QueuedDragMove(val deltaX: Int, val deltaY: Int)
+    // cursorDx and cursorDy are the float deltas for the virtual cursor model, unused without it.
+    private data class QueuedDragMove(val deltaX: Int, val deltaY: Int, val cursorDx: Float = 0f, val cursorDy: Float = 0f)
     private data class QueuedLeftDrag(val moves: List<QueuedDragMove>)
 
     // 本地光标渲染器 - 用于显示虚拟鼠标光标
     private var localCursorRenderer: LocalCursorRenderer? = null
     // 是否启用本地光标渲染
     private var enableLocalCursorRendering = true
+
+    // Shared client-owned cursor (spec 1.3). Null means the baseline relative behavior.
+    private var virtualCursor: VirtualCursorModel? = null
+
+    fun setVirtualCursorModel(model: VirtualCursorModel?) {
+        virtualCursor = model
+    }
 
     private val dragTimerRunnable = Runnable {
         // Check if someone already set move
@@ -219,6 +228,11 @@ class RelativeTouchContext(
         if (isNewFinger) {
             scrollScaler.reset()
             gestureScrollSpeedPercent = scrollSpeedPercent
+            // The model is the truth (spec 1.3 D3, D19): put the host cursor there before any
+            // tap or drag, so host drift cannot misplace a click.
+            if (actionIndex == 0) {
+                virtualCursor?.let { sendModelPosition(it, 0f, 0f) }
+            }
             // 新手势开始时，取消可能存在的未确认延迟单击
             cancelPendingSingleTap()
             //  新手势开始，丢弃上一手势尚未发出的排队拖拽按下
@@ -384,6 +398,9 @@ class RelativeTouchContext(
                 var deltaY = eventY - lastTouchY
                 deltaX = Math.round(Math.abs(deltaX) * xFactor * if (eventX < lastTouchX) -1 else 1).toInt()
                 deltaY = Math.round(Math.abs(deltaY) * yFactor * if (eventY < lastTouchY) -1 else 1).toInt()
+                // Model units are stream-area pixels, so no 1280 reference factor (spec 1.3 CM-03).
+                val cursorDx = (eventX - lastTouchX) * sense.toFloat()
+                val cursorDy = (eventY - lastTouchY) * sense.toFloat()
 
                 if (pointerCount == 2) {
                     if (confirmedScroll) {
@@ -392,23 +409,30 @@ class RelativeTouchContext(
                 } else if (confirmedMove || isDoubleClickDrag || confirmedDrag) {
                     if (isDoubleClickDrag || (confirmedDrag && buttonIndexIsLeft())) {
                         if (dragButtonDownQueued) {
-                            queuedDragMoves.add(QueuedDragMove(deltaX, deltaY))
+                            queuedDragMoves.add(QueuedDragMove(deltaX, deltaY, cursorDx, cursorDy))
                         } else {
-                            sendDragMove(deltaX, deltaY)
+                            sendDragMove(deltaX, deltaY, cursorDx, cursorDy)
                         }
                     } else {
-                        sendDragMove(deltaX, deltaY)
+                        sendDragMove(deltaX, deltaY, cursorDx, cursorDy)
                     }
                 }
 
                 // If the scaling factor ended up rounding deltas to zero, wait until they are
                 // non-zero to update lastTouch that way devices that report small touch events often
                 // will work correctly
-                if (deltaX != 0) {
+                if (virtualCursor != null && pointerCount != 2) {
+                    // The model keeps fractions, so every finger move is consumed whole. Keeping
+                    // the old zero-delta rule here would apply the same move twice.
                     lastTouchX = eventX
-                }
-                if (deltaY != 0) {
                     lastTouchY = eventY
+                } else {
+                    if (deltaX != 0) {
+                        lastTouchX = eventX
+                    }
+                    if (deltaY != 0) {
+                        lastTouchY = eventY
+                    }
                 }
             } else {
                 lastTouchX = eventX
@@ -585,7 +609,12 @@ class RelativeTouchContext(
     private fun buttonIndexIsLeft(): Boolean = getMouseButtonIndex() == MouseButtonPacket.BUTTON_LEFT
 
     /** Sends a drag movement using the same cursor mode as ordinary touch movement. */
-    private fun sendDragMove(deltaX: Int, deltaY: Int) {
+    private fun sendDragMove(deltaX: Int, deltaY: Int, cursorDx: Float = 0f, cursorDy: Float = 0f) {
+        val model = virtualCursor
+        if (model != null) {
+            sendModelPosition(model, cursorDx, cursorDy)
+            return
+        }
         val renderer = localCursorRenderer
         if (renderer != null && this.enableLocalCursorRendering) {
             renderer.updateCursorPosition(deltaX.toFloat(), deltaY.toFloat())
@@ -605,6 +634,21 @@ class RelativeTouchContext(
             )
         } else {
             conn.sendMouseMove(deltaX.toShort(), deltaY.toShort())
+        }
+    }
+
+    /** Moves the shared model and sends its absolute position, never relative deltas. */
+    private fun sendModelPosition(model: VirtualCursorModel, dx: Float, dy: Float) {
+        model.setArea(targetView.width, targetView.height)
+        model.moveBy(dx, dy)
+        conn.sendMousePosition(
+            model.absoluteX().toShort(),
+            model.absoluteY().toShort(),
+            model.areaWidth.toShort(),
+            model.areaHeight.toShort()
+        )
+        if (enableLocalCursorRendering) {
+            localCursorRenderer?.setPosition(model.x, model.y)
         }
     }
 
@@ -631,7 +675,7 @@ class RelativeTouchContext(
     private fun deliverQueuedDragSequence(drag: QueuedLeftDrag) {
         sendMouseButtonDownProxy(MouseButtonPacket.BUTTON_LEFT)
         dragButtonDownSent = true
-        drag.moves.forEach { move -> sendDragMove(move.deltaX, move.deltaY) }
+        drag.moves.forEach { move -> sendDragMove(move.deltaX, move.deltaY, move.cursorDx, move.cursorDy) }
         sendMouseButtonUpProxy(MouseButtonPacket.BUTTON_LEFT)
         dragButtonDownSent = false
     }
@@ -648,7 +692,7 @@ class RelativeTouchContext(
             dragButtonDownSent = true
             while (!queuedDragMoves.isEmpty()) {
                 val move = queuedDragMoves.removeFirst()
-                sendDragMove(move.deltaX, move.deltaY)
+                sendDragMove(move.deltaX, move.deltaY, move.cursorDx, move.cursorDy)
             }
         }
     }

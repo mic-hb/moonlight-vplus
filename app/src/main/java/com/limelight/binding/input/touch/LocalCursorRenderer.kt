@@ -25,6 +25,13 @@ class LocalCursorRenderer(
         postPosition()
     }
 
+    /** Follows the shared VirtualCursorModel when the new touch mode is on. */
+    fun setPosition(x: Float, y: Float) {
+        cursorX = x
+        cursorY = y
+        postPosition()
+    }
+
     fun setViewDimensions(width: Int, height: Int) {
         val newWidth = maxOf(1, width)
         val newHeight = maxOf(1, height)
