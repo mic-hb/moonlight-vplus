@@ -157,6 +157,8 @@
     <string name="category_input_settings">輸入</string>
     <string name="title_checkbox_touchscreen_trackpad">將觸控式螢幕作為觸控板使用</string>
     <string name="summary_checkbox_touchscreen_trackpad">如果啟用，則將觸控式螢幕作為觸控板使用。 如果停用，則觸控式螢幕直接控制滑鼠游標。</string>
+    <string name="title_stream_audio_to_client">在本裝置上播放聲音</string>
+    <string name="summary_stream_audio_to_client">關閉：聲音保留在電腦上，本裝置靜音。開啟：電腦的聲音會傳到本裝置。</string>
     <string name="title_teamviewer_style_touch">TeamViewer 風格觸控</string>
     <string name="summary_teamviewer_style_touch">在觸控板模式下，雙指張合可縮放，雙指同向滑動可捲動。關閉後恢復原有行為。</string>
     <string name="title_checkbox_touch_keyboard_auto_invoke">自動彈出電腦觸摸鍵盤</string>

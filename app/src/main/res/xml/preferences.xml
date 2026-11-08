@@ -1036,6 +1036,11 @@
             android:entryValues="@array/screen_combination_mode_values"
             android:defaultValue="-1" />
         <CheckBoxPreference
+            android:key="pref_stream_audio_to_client"
+            android:title="@string/title_stream_audio_to_client"
+            android:summary="@string/summary_stream_audio_to_client"
+            android:defaultValue="false" />
+        <CheckBoxPreference
             android:key="checkbox_host_audio"
             android:title="@string/title_checkbox_host_audio"
             android:summary="@string/summary_checkbox_host_audio"

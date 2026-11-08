@@ -82,6 +82,8 @@ class PreferenceConfiguration {
 
     var enableDoubleClickDrag = false
     var teamViewerStyleTouch = true // pinch zoom plus two-finger scroll in Trackpad mode (spec group 1)
+    /** False keeps the stream sound off this device and the sound on the computer (owner decision 2026-11-08). */
+    var streamAudioToClient = false
     var doubleTapTimeThreshold = 0
     var enableLocalCursorRendering = false
     var optimizeHardwareTouchpad = false
@@ -414,6 +416,7 @@ class PreferenceConfiguration {
                 )
                 .putBoolean(ENABLE_DOUBLE_CLICK_DRAG_PREF_STRING, enableDoubleClickDrag)
                 .putBoolean(TEAMVIEWER_STYLE_TOUCH_PREF_STRING, teamViewerStyleTouch)
+                .putBoolean(STREAM_AUDIO_TO_CLIENT_PREF_STRING, streamAudioToClient)
                 .putBoolean(ENABLE_LOCAL_CURSOR_RENDERING_PREF_STRING, enableLocalCursorRendering)
                 .putBoolean(OPTIMIZE_HARDWARE_TOUCHPAD_PREF_STRING, optimizeHardwareTouchpad)
                 .putInt(HARDWARE_TOUCHPAD_POINTER_SPEED_PREF_STRING, hardwareTouchpadPointerSpeedPercent)
@@ -606,6 +609,7 @@ class PreferenceConfiguration {
         copy.hevcLowLatencyMode = this.hevcLowLatencyMode
         copy.enableDoubleClickDrag = this.enableDoubleClickDrag
         copy.teamViewerStyleTouch = this.teamViewerStyleTouch
+        copy.streamAudioToClient = this.streamAudioToClient
         copy.enableLocalCursorRendering = this.enableLocalCursorRendering
         copy.optimizeHardwareTouchpad = this.optimizeHardwareTouchpad
         copy.hardwareTouchpadPointerSpeedPercent = this.hardwareTouchpadPointerSpeedPercent
@@ -636,6 +640,7 @@ class PreferenceConfiguration {
         // ---- Private pref key constants ----
         private const val ENABLE_DOUBLE_CLICK_DRAG_PREF_STRING = "pref_enable_double_click_drag"
         private const val TEAMVIEWER_STYLE_TOUCH_PREF_STRING = "pref_teamviewer_style_touch"
+        private const val STREAM_AUDIO_TO_CLIENT_PREF_STRING = "pref_stream_audio_to_client"
         private const val DOUBLE_TAP_TIME_THRESHOLD_PREF_STRING = "seekbar_double_tap_time_threshold"
         private const val ENABLE_LOCAL_CURSOR_RENDERING_PREF_STRING = "pref_enable_local_cursor_rendering"
         private const val OPTIMIZE_HARDWARE_TOUCHPAD_PREF_STRING = "checkbox_optimize_hardware_touchpad"
@@ -997,6 +1002,7 @@ class PreferenceConfiguration {
 
         private const val DEFAULT_ENABLE_DOUBLE_CLICK_DRAG = false
         private const val DEFAULT_TEAMVIEWER_STYLE_TOUCH = true
+        private const val DEFAULT_STREAM_AUDIO_TO_CLIENT = false
         private const val DEFAULT_DOUBLE_TAP_TIME_THRESHOLD = 125 // 默认125ms
         private const val DEFAULT_ENABLE_LOCAL_CURSOR_RENDERING = false
         private const val DEFAULT_OPTIMIZE_HARDWARE_TOUCHPAD = false
@@ -1591,6 +1597,7 @@ class PreferenceConfiguration {
             config.disableWarnings = prefs.getBoolean(DISABLE_TOASTS_PREF_STRING, DEFAULT_DISABLE_TOASTS)
             config.enableDoubleClickDrag = prefs.getBoolean(ENABLE_DOUBLE_CLICK_DRAG_PREF_STRING, DEFAULT_ENABLE_DOUBLE_CLICK_DRAG)
             config.teamViewerStyleTouch = prefs.getBoolean(TEAMVIEWER_STYLE_TOUCH_PREF_STRING, DEFAULT_TEAMVIEWER_STYLE_TOUCH)
+            config.streamAudioToClient = prefs.getBoolean(STREAM_AUDIO_TO_CLIENT_PREF_STRING, DEFAULT_STREAM_AUDIO_TO_CLIENT)
             config.doubleTapTimeThreshold = prefs.getInt(DOUBLE_TAP_TIME_THRESHOLD_PREF_STRING, DEFAULT_DOUBLE_TAP_TIME_THRESHOLD)
             config.enableLocalCursorRendering = prefs.getBoolean(ENABLE_LOCAL_CURSOR_RENDERING_PREF_STRING, DEFAULT_ENABLE_LOCAL_CURSOR_RENDERING)
             config.optimizeHardwareTouchpad = prefs.getBoolean(OPTIMIZE_HARDWARE_TOUCHPAD_PREF_STRING, DEFAULT_OPTIMIZE_HARDWARE_TOUCHPAD)

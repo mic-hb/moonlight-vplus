@@ -1288,7 +1288,7 @@ class Game : ThemedComponentActivity(), SurfaceHolder.Callback,
             .setFecPercentage(prefConfig.fecPercentage)
             .setResolutionScale(prefConfig.resolutionScale)
             .setEnableSops(prefConfig.enableSops)
-            .enableLocalAudioPlayback(prefConfig.playHostAudio)
+            .enableLocalAudioPlayback(prefConfig.playHostAudio || !prefConfig.streamAudioToClient)
             .setMaxPacketSize(1392)
             .setRemoteConfiguration(StreamConfiguration.STREAM_CFG_AUTO)
             .setSupportedVideoFormats(supportedVideoFormats)
@@ -3067,7 +3067,11 @@ class Game : ThemedComponentActivity(), SurfaceHolder.Callback,
                     )
                 }
             )
-            conn?.start(this.audioRenderer!!, decoderRenderer!!, streamConnectionListener)
+            // Sound stays on the computer unless the owner turned on "Play audio on this device".
+            val renderer: com.limelight.nvstream.av.audio.AudioRenderer =
+                if (prefConfig.streamAudioToClient) this.audioRenderer!!
+                else com.limelight.binding.audio.MutedAudioRenderer(this.audioRenderer!!)
+            conn?.start(renderer, decoderRenderer!!, streamConnectionListener)
 
             streamView.post { cursorServiceManager.syncCursorWithStream() }
         } else if (connected && isExtremeResumeEnabled) {
