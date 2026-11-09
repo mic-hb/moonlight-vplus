@@ -47,6 +47,10 @@ class RemoteImeController(
         // Freeze the temporary offset on a real pan/scale, without changing the
         // rendered position. Dismissal still removes only this temporary offset.
         panZoomHandler.onUserTransform = { avoidanceSession.takeControl() }
+        // The cursor-follow camera moved the picture with the keyboard open, so the text focus
+        // offset is worked out again from the new position (spec 1.4 LY-06). It only sets the
+        // offset and never calls the camera, so there is no loop.
+        panZoomHandler.onCameraPlaced = { updateAvoidance(latestInsets ?: ViewCompat.getRootWindowInsets(streamView)) }
         streamView.rootView.viewTreeObserver.addOnGlobalLayoutListener(this)
         ViewCompat.setOnApplyWindowInsetsListener(streamView) { _, insets ->
             latestInsets = insets
@@ -169,6 +173,9 @@ class RemoteImeController(
             if (insets != null) imeVisible else visibleBottom != null,
             SystemClock.elapsedRealtime(),
         )
+        // Tell the camera how much of the parent the keyboard covers, so the picture shifts even
+        // when the host reports no text focus (spec 1.4 LY-11, D14).
+        panZoomHandler.setKeyboardHeight(keyboardHeightOverParent(visibleBottom))
         if (visibleBottom == null) {
             panZoomHandler.setImeOffsetY(0f)
             return
@@ -201,6 +208,15 @@ class RemoteImeController(
         )
     }
 
+    /** Pixels of the stream parent that the keyboard covers, 0 when it is closed or not trustworthy. */
+    private fun keyboardHeightOverParent(visibleBottom: Float?): Float {
+        if (visibleBottom == null) return 0f
+        val parent = streamView.parent as? View ?: return 0f
+        val location = IntArray(2)
+        parent.getLocationOnScreen(location)
+        return (location[1] + parent.height - visibleBottom).coerceIn(0f, parent.height.toFloat())
+    }
+
     fun dispose() {
         disposed = true
         generation++
@@ -218,6 +234,8 @@ class RemoteImeController(
         streamView.setTextInputEnabled(false)
         avoidanceSession.reset()
         panZoomHandler.onUserTransform = null
+        panZoomHandler.onCameraPlaced = null
+        panZoomHandler.setKeyboardHeight(0f)
         val observer = streamView.rootView.viewTreeObserver
         if (observer.isAlive) observer.removeOnGlobalLayoutListener(this)
         ViewCompat.setOnApplyWindowInsetsListener(streamView, null)

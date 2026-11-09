@@ -30,6 +30,18 @@ class PanZoomHandler(
     private var userTransformActive = false
     var onUserTransform: (() -> Unit)? = null
 
+    // Spec 1.4 batch 6. Height of the on-screen keyboard over the bottom of the parent. The camera
+    // treats the part above it as the viewport (D12). Zero when the keyboard is closed.
+    private var keyboardHeight = 0f
+
+    /** Runs after the camera placed the picture while a keyboard is open, so the text focus offset can follow. */
+    var onCameraPlaced: (() -> Unit)? = null
+
+    /** Runs when the parent size changed (rotation, split screen), so active touches can be cancelled (D13). */
+    var onViewportChanged: (() -> Unit)? = null
+    private var lastParentWidth = 0f
+    private var lastParentHeight = 0f
+
     // Trackpad pinch mode (spec 1.2). Only the scale detector is fed, and onScale is gated
     // until the classifier decides PINCH. False in the old Pan and Zoom toggle mode.
     private var trackpadDetectorMode = false
@@ -86,7 +98,20 @@ class PanZoomHandler(
     /** Moves the picture so the cursor stays at the viewport center. Cursor moves are not a user pan. */
     private fun followCursor() {
         val model = cursorModel ?: return
-        if (!trackpadDetectorMode || scaleFactor <= 1f) return
+        if (!trackpadDetectorMode || (scaleFactor <= 1f && keyboardHeight <= 0f)) return
+        placeWithCamera(model)
+    }
+
+    /**
+     * Tells the camera how much of the parent the keyboard covers (spec 1.4 LY-11). Only the
+     * cursor-follow camera reacts. Other modes keep the text focus offset alone.
+     */
+    fun setKeyboardHeight(height: Float) {
+        val clean = if (height.isFinite() && height > 0f) height else 0f
+        if (clean == keyboardHeight) return
+        keyboardHeight = clean
+        val model = cursorModel ?: return
+        if (!cameraMode()) return
         placeWithCamera(model)
     }
 
@@ -97,10 +122,12 @@ class PanZoomHandler(
             streamView.width.toFloat(), streamView.height.toFloat(),
             parentWidth, parentHeight,
             streamView.left.toFloat(), streamView.top.toFloat(),
+            keyboardHeight,
         )
         childX = camera.offsetX
         childY = camera.offsetY
         applyTransform()
+        if (keyboardHeight > 0f) onCameraPlaced?.invoke()
     }
 
     /** True once the classifier decided PINCH, false at gesture end or on any other decision. */
@@ -149,6 +176,14 @@ class PanZoomHandler(
         cursorOverlay.scaleY = scaleFactor
         cursorOverlay.x = childX
         cursorOverlay.y = childY + imeOffsetY
+        // Cursor size grows only partly with zoom in the cursor-follow camera mode (spec 1.4 batch 6b).
+        (cursorOverlay as? com.limelight.ui.CursorView)?.setContentScale(
+            if (cameraMode() && scaleFactor > 1f) {
+                TouchScaling.cursorContentScale(scaleFactor, TouchScaling.CURSOR_SIZE_EXPONENT)
+            } else {
+                1f
+            }
+        )
     }
 
     fun setImeOffsetY(offsetY: Float) {
@@ -164,6 +199,7 @@ class PanZoomHandler(
     }
 
     fun handleSurfaceChange() {
+        notifyViewportChange()
         val model = cursorModel
         if (userTransformActive && model != null && cameraMode()) {
             // The ratio to fit stays. Only the viewport changed, so ask the camera again.
@@ -207,17 +243,28 @@ class PanZoomHandler(
         constrainToBounds()
     }
 
+    private fun notifyViewportChange() {
+        val currentParent = (parent ?: streamView.parent as? View) ?: return
+        val w = currentParent.width.toFloat()
+        val h = currentParent.height.toFloat()
+        if (w <= 0f || h <= 0f) return
+        val changed = lastParentWidth > 0f && (w != lastParentWidth || h != lastParentHeight)
+        lastParentWidth = w
+        lastParentHeight = h
+        if (changed && cameraMode()) onViewportChanged?.invoke()
+    }
+
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
             // Returning true keeps the detector's span current, so opening the gate does not jump.
             if (trackpadDetectorMode && !trackpadZoomAllowed) return true
             val model = cursorModel
             if (model != null && trackpadDetectorMode) {
-                val before = scaleFactor
                 scaleFactor = camera.nextScale(scaleFactor, detector.scaleFactor)
                 userTransformActive = scaleFactor > 1f
                 placeWithCamera(model)
-                if (scaleFactor != before) onUserTransform?.invoke()
+                // No onUserTransform here: with the cursor-follow camera a pinch does not freeze
+                // the keyboard offset (spec 1.4 D11).
                 return true
             }
             val previousX = childX

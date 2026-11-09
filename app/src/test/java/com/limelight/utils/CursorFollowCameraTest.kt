@@ -179,4 +179,82 @@ class CursorFollowCameraTest {
             }
         }
     }
+
+    // Keyboard aware placement (spec 1.4 LY-11, D12, D14)
+
+    private fun CursorFollowCamera.withKeyboard(cx: Float, cy: Float, s: Float, kb: Float) =
+        place(cx, cy, s, areaW, areaH, viewW, viewH, baseX, baseY, kb)
+
+    @Test
+    fun keyboardZeroEqualsThePlainPlacement() {
+        val a = CursorFollowCamera()
+        val b = CursorFollowCamera()
+        for (s in floatArrayOf(1f, 2f, 5f)) {
+            a.at(300f, 200f, s)
+            b.withKeyboard(300f, 200f, s, 0f)
+            assertEquals(a.offsetX, b.offsetX, 0f)
+            assertEquals(a.offsetY, b.offsetY, 0f)
+        }
+    }
+
+    @Test
+    fun atFitAPictureSmallerThanTheAreaAboveTheKeyboardIsCenteredThere() {
+        // Viewport 2000 high, keyboard 800, so 1200 are visible. The picture is 600 high.
+        val c = CursorFollowCamera()
+        c.withKeyboard(500f, 300f, 1f, 800f)
+        assertEquals(baseX, c.offsetX, 0f) // x stays the layout base at fit
+        assertEquals((1200f - 600f) / 2f, c.offsetY, delta)
+    }
+
+    @Test
+    fun atFitAPictureTallerThanTheAreaAboveTheKeyboardFollowsTheCursor() {
+        val c = CursorFollowCamera()
+        // Visible 400 high, the picture is 600 high. Cursor at the bottom pulls the picture up.
+        c.place(500f, 599f, 1f, areaW, areaH, viewW, viewH, baseX, baseY, 1600f)
+        assertEquals(400f - 600f, c.offsetY, delta) // clamped: bottom edge at the keyboard top
+        c.place(500f, 0f, 1f, areaW, areaH, viewW, viewH, baseX, baseY, 1600f)
+        assertEquals(0f, c.offsetY, delta)
+    }
+
+    @Test
+    fun zoomedCursorIsCenteredInTheAreaAboveTheKeyboard() {
+        val c = CursorFollowCamera()
+        // scale 4: picture 4000 x 2400, visible height 1200, cursor in the middle of the area.
+        c.withKeyboard(500f, 300f, 4f, 800f)
+        assertEquals(1200f / 2f - 300f * 4f, c.offsetY, delta)
+        assertEquals(1080f / 2f - 500f * 4f, c.offsetX, delta)
+    }
+
+    @Test
+    fun zoomedPictureNeverShowsEmptySpaceAboveTheKeyboardAtTheBottomEdge() {
+        val c = CursorFollowCamera()
+        c.withKeyboard(500f, 599f, 4f, 800f)
+        assertEquals(1200f - 2400f, c.offsetY, delta)
+    }
+
+    @Test
+    fun closingTheKeyboardReturnsExactlyToThePlainPlacement() {
+        val c = CursorFollowCamera()
+        c.withKeyboard(400f, 250f, 3f, 800f)
+        c.withKeyboard(400f, 250f, 3f, 0f)
+        val plain = CursorFollowCamera()
+        plain.at(400f, 250f, 3f)
+        assertEquals(plain.offsetY, c.offsetY, 0f)
+        c.withKeyboard(400f, 250f, 1f, 800f)
+        c.withKeyboard(400f, 250f, 1f, 0f)
+        assertEquals(baseY, c.offsetY, 0f)
+    }
+
+    @Test
+    fun badKeyboardHeightIsIgnoredOrLimited() {
+        val c = CursorFollowCamera()
+        c.withKeyboard(500f, 300f, 3f, Float.NaN)
+        val plain = CursorFollowCamera()
+        plain.at(500f, 300f, 3f)
+        assertEquals(plain.offsetY, c.offsetY, 0f)
+        c.withKeyboard(500f, 300f, 3f, -50f)
+        assertEquals(plain.offsetY, c.offsetY, 0f)
+        c.withKeyboard(500f, 300f, 3f, 99999f) // taller than the viewport, still finite
+        assertTrue(c.offsetY.isFinite())
+    }
 }

@@ -131,6 +131,28 @@ class TouchScalingTest {
     }
 
     @Test
+    fun cursorContentScaleExponentZeroIsConstantSizeAndOneIsUntouched() {
+        for (z in listOf(1f, 2f, 5f, 10f)) {
+            assertEquals(1f / z, TouchScaling.cursorContentScale(z, 0f), 1e-5f)
+            assertEquals(1f, TouchScaling.cursorContentScale(z, 1f), 1e-5f)
+        }
+    }
+
+    @Test
+    fun cursorContentScaleHalfGivesSquareRootGrowthOnScreen() {
+        // On-screen size = zoom * contentScale = zoom^0.5.
+        assertEquals(Math.sqrt(4.0).toFloat(), 4f * TouchScaling.cursorContentScale(4f, 0.5f), 1e-5f)
+        assertEquals(1f, TouchScaling.cursorContentScale(1f, 0.5f), 1e-6f)
+    }
+
+    @Test
+    fun cursorContentScaleIgnoresBadInput() {
+        assertEquals(1f, TouchScaling.cursorContentScale(Float.NaN, 0.5f), 1e-6f)
+        assertEquals(1f / 3f, TouchScaling.cursorContentScale(3f, Float.NaN), 1e-5f)
+        assertEquals(1f, TouchScaling.cursorContentScale(3f, 7f), 1e-5f)
+    }
+
+    @Test
     fun scrollCompensationExponentOneIsTheFullFormulaAndSmallerSlowsIt() {
         for (d in -30..30) {
             assertEquals(TouchScaling.scrollDelta(d, 0.9, 4f), TouchScaling.scrollDelta(d, 0.9, 4f, 1f))

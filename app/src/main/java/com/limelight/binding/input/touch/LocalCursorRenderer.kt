@@ -76,6 +76,12 @@ class LocalCursorRenderer(
     fun getCursorAbsolutePosition(): FloatArray = floatArrayOf(cursorX, cursorY)
 
     private fun postPosition() {
-        uiHandler.post { cursorView?.updateCursorPosition(cursorX, cursorY) }
+        // On the main thread update at once, so the cursor and the camera move in the same frame.
+        // A later post would draw the cursor one frame behind the picture.
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            cursorView?.updateCursorPosition(cursorX, cursorY)
+        } else {
+            uiHandler.post { cursorView?.updateCursorPosition(cursorX, cursorY) }
+        }
     }
 }

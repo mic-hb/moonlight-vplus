@@ -1721,6 +1721,11 @@ class TouchInputHandler(private val game: Game) {
         }
         cursorFollowCamera = sharedCursor != null
         game.panZoomHandler.setCursorModel(sharedCursor)
+        // A rotation or resize in the middle of a gesture changes what the finger positions mean,
+        // so drop the active touches instead of letting the cursor jump (spec 1.4 D13).
+        game.panZoomHandler.onViewportChanged = {
+            for (tc in touchContextMap) tc?.cancelTouch()
+        }
         for (i in 0 until TOUCH_CONTEXT_LENGTH) {
             absoluteTouchContextMap[i] = AbsoluteTouchContext(conn, i, streamView)
             relativeTouchContextMap[i] = RelativeTouchContext(conn, i, streamView, prefConfig).also {

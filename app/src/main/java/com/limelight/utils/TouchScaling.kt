@@ -20,6 +20,19 @@ object TouchScaling {
     const val CURSOR_ZOOM_EXPONENT = 0.8f
     const val SCROLL_ZOOM_EXPONENT = 0.6f
 
+    /** Local cursor size growth with zoom: on-screen size is zoom^exponent. 0 = constant, 1 = grows like the picture. */
+    const val CURSOR_SIZE_EXPONENT = 0.5f
+
+    /**
+     * Factor applied to the cursor drawing inside the overlay, which the view transform already
+     * magnified by [zoom]. Result: on-screen size = zoom^exponent times the fit size.
+     */
+    fun cursorContentScale(zoom: Float, exponent: Float): Float {
+        val e = if (exponent.isFinite()) exponent.coerceIn(0f, 1f) else 0f
+        val z = safeZoom(zoom).toDouble()
+        return Math.pow(z, (e - 1f).toDouble()).toFloat()
+    }
+
     /**
      * Cursor travel in stream-area pixels for a normalized finger delta. The zoom was divided out
      * already by the coordinate conversion, so it is NOT divided again here (spec 1.3 D7, CM-10).

@@ -28,6 +28,17 @@ class CursorView : View {
     private var hostCursorVisible = false
     private val paint = Paint()
 
+    // The overlay is scaled with the picture. This factor (1 / zoom) draws the cursor back at its
+    // natural size around its hot spot, so it stays sharp and constant on screen (spec 1.4 batch 6b).
+    private var contentScale = 1f
+
+    fun setContentScale(scale: Float) {
+        val clean = if (scale.isFinite() && scale > 0f) scale else 1f
+        if (clean == contentScale) return
+        contentScale = clean
+        invalidate()
+    }
+
     constructor(context: Context) : super(context) {
         init(context)
     }
@@ -122,7 +133,14 @@ class CursorView : View {
         if (bmpToDraw != null) {
             val left = cursorX - pX
             val top = cursorY - pY
-            canvas.drawBitmap(bmpToDraw, left, top, paint)
+            if (contentScale != 1f) {
+                canvas.save()
+                canvas.scale(contentScale, contentScale, cursorX, cursorY)
+                canvas.drawBitmap(bmpToDraw, left, top, paint)
+                canvas.restore()
+            } else {
+                canvas.drawBitmap(bmpToDraw, left, top, paint)
+            }
         }
     }
 
