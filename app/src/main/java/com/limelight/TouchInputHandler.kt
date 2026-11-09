@@ -102,7 +102,6 @@ class TouchInputHandler(private val game: Game) {
     // True when a cursor model exists: the camera follows the cursor, see getNormalizedCoordinates.
     private var cursorFollowCamera = false
     private var zoomRouted = false
-    private var classifierBeginTime = 0L
 
     private var lastAbsTouchUpTime = 0L
     private var lastAbsTouchDownTime = 0L
@@ -724,7 +723,6 @@ class TouchInputHandler(private val game: Game) {
                         event.eventTime, event.getX(0), event.getY(0), event.getX(1), event.getY(1)
                     )
                     classifierRunning = true
-                    classifierBeginTime = event.eventTime
                     zoom.handleTrackpadTouchEvent(event)
                 } else {
                     // Third finger: the baseline cancels all contexts (B7).
@@ -741,8 +739,6 @@ class TouchInputHandler(private val game: Game) {
                     event.eventTime, event.getX(0), event.getY(0), event.getX(1), event.getY(1)
                 )
                 if (decision != before) {
-                    // Tuning log, numbers only. Remove in cleanup (spec 1.0 batch 8).
-                    LimeLog.info("TV touch decision=$before->$decision after ${event.eventTime - classifierBeginTime} ms")
                     // D9: a decided gesture can never end as a two-finger tap right click.
                     twoFingerMoved = true
                     if (decision == GestureDecision.PINCH) {
