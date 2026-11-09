@@ -3531,6 +3531,12 @@ class StreamSettings : ThemedAppCompatActivity() {
                         true
                     }
 
+            findPreference<Preference>("teamviewer_touch_tuning")?.onPreferenceClickListener =
+                    Preference.OnPreferenceClickListener {
+                        startActivity(Intent(requireActivity(), TeamViewerTouchSettingsActivity::class.java))
+                        true
+                    }
+
             findPreference<Preference>("controller_mouse_settings")!!.onPreferenceClickListener =
                     Preference.OnPreferenceClickListener {
                         startActivity(Intent(requireActivity(), ControllerMouseSettingsActivity::class.java))

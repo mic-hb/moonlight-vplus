@@ -767,6 +767,21 @@ class GameMenu(
             )
         )
 
+        if (isTouchscreenTrackpad && game.prefConfig.teamViewerStyleTouch) {
+            touchModeOptionsList.add(
+                MenuOption(
+                    label = getString(R.string.tv_touch_menu_option),
+                    isWithGameFocus = true,
+                    runnable = Runnable { TeamViewerTouchTuningSheet.show(game) },
+                    iconKey = null,
+                    isShowIcon = false,
+                    isKeepDialog = false,
+                    subtitle = getString(R.string.tv_touch_menu_option_summary),
+                    presentation = GameMenuOptionPresentation.COMPATIBLE_ACTION
+                )
+            )
+        }
+
         //触控板仅移动
         if (isTouchscreenTrackpad) {
             touchModeOptionsList.add(

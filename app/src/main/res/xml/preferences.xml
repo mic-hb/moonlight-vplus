@@ -823,6 +823,10 @@
                     android:title="@string/title_teamviewer_style_touch"
                     android:summary="@string/summary_teamviewer_style_touch"
                     android:defaultValue="true" />
+                <Preference
+                    android:key="teamviewer_touch_tuning"
+                    android:title="@string/tv_touch_settings_title"
+                    android:summary="@string/tv_touch_settings_summary" />
                 <CheckBoxPreference
                     android:key="checkbox_screen_ds5_single_tap_to_click"
                     android:title="@string/title_ds5_single_tap_to_click"

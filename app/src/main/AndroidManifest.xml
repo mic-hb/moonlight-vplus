@@ -292,6 +292,11 @@
             android:theme="@style/SettingsThemeCompat"
             android:label="@string/stick_calibration_title" />
         <activity
+            android:name=".preferences.TeamViewerTouchSettingsActivity"
+            android:exported="false"
+            android:theme="@style/SettingsThemeCompat"
+            android:label="@string/tv_touch_settings_title" />
+        <activity
             android:name=".preferences.ControllerMouseSettingsActivity"
             android:exported="false"
             android:theme="@style/SettingsThemeCompat"
