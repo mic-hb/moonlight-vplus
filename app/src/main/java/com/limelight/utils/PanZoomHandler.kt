@@ -50,7 +50,8 @@ class PanZoomHandler(
     // Cursor-follow camera (spec 1.3 batch 4). Active in the trackpad mode when a cursor model
     // exists. Then a pinch changes only the scale and the camera places the picture so the cursor
     // is at the viewport center. The old finger pivot code stays for the old Pan and Zoom mode.
-    private val camera = CursorFollowCamera(maxScale = MAX_SCALE)
+    private var camera = CursorFollowCamera(maxScale = MAX_SCALE)
+    private var cursorSizeExponent = TouchScaling.CURSOR_SIZE_EXPONENT
     private var cursorModel: VirtualCursorModel? = null
 
     init {
@@ -84,6 +85,26 @@ class PanZoomHandler(
             scaleGestureDetector.isQuickScaleEnabled = false
         }
         scaleGestureDetector.onTouchEvent(motionEvent)
+    }
+
+    /**
+     * Takes the tunable zoom values (spec 1.5). Called at the start of a touch gesture. Only the
+     * cursor-follow camera uses them, the old Pan and Zoom mode keeps its constants.
+     */
+    fun applySettings(settings: TeamViewerTouchSettings) {
+        if (camera.maxScale != settings.maxZoom || camera.pinchGain != settings.pinchGain) {
+            camera = CursorFollowCamera(settings.maxZoom, settings.pinchGain)
+            if (scaleFactor > settings.maxZoom) scaleFactor = settings.maxZoom
+        }
+        if (cursorSizeExponent != settings.cursorSizeExponent) {
+            cursorSizeExponent = settings.cursorSizeExponent
+            applyTransformIfReady()
+        }
+    }
+
+    private fun applyTransformIfReady() {
+        if (childWidth == 0f || childHeight == 0f || parent == null) return
+        applyTransform()
     }
 
     /** Gives the camera the cursor to follow. Null leaves the old finger pivot behavior. */
@@ -179,7 +200,7 @@ class PanZoomHandler(
         // Cursor size grows only partly with zoom in the cursor-follow camera mode (spec 1.4 batch 6b).
         (cursorOverlay as? com.limelight.ui.CursorView)?.setContentScale(
             if (cameraMode() && scaleFactor > 1f) {
-                TouchScaling.cursorContentScale(scaleFactor, TouchScaling.CURSOR_SIZE_EXPONENT)
+                TouchScaling.cursorContentScale(scaleFactor, cursorSizeExponent)
             } else {
                 1f
             }

@@ -10,6 +10,7 @@ import com.limelight.nvstream.NvConnection
 import com.limelight.nvstream.input.MouseButtonPacket
 import com.limelight.preferences.PreferenceConfiguration
 import com.limelight.ui.CursorView
+import com.limelight.utils.TeamViewerTouchSettings
 import com.limelight.utils.TouchScaling
 import com.limelight.utils.VirtualCursorModel
 
@@ -126,6 +127,33 @@ class RelativeTouchContext(
         virtualCursor = model
     }
 
+    // Spec 1.5. Thresholds and zoom factors of the TeamViewer style mode. They start as the old
+    // constants and follow the settings only while the shared cursor exists, so the baseline mode
+    // never changes. Set at the start of each gesture, not in the middle of one (D6).
+    private var tapMovementThreshold = TAP_MOVEMENT_THRESHOLD.toFloat()
+    private var tapDistanceThreshold = TAP_DISTANCE_THRESHOLD.toFloat()
+    private var tapTimeThreshold = TAP_TIME_THRESHOLD
+    private var dragTimeThreshold = DRAG_TIME_THRESHOLD
+    private var dragStartThreshold = DRAG_START_THRESHOLD.toFloat()
+    private var doubleTapHoldThreshold = DOUBLE_TAP_HOLD_TO_DRAG_THRESHOLD
+    private var doubleTapMovementThreshold = DOUBLE_TAP_MOVEMENT_THRESHOLD.toFloat()
+    private var cursorZoomExponent = TouchScaling.CURSOR_ZOOM_EXPONENT
+    private var scrollZoomExponent = TouchScaling.SCROLL_ZOOM_EXPONENT
+
+    /** [density] is the screen density in pixels per dp. */
+    fun applySettings(settings: TeamViewerTouchSettings, density: Float) {
+        if (virtualCursor == null) return
+        tapMovementThreshold = settings.px(TeamViewerTouchSettings.TAP_MOVE_DP, density)
+        tapDistanceThreshold = settings.px(TeamViewerTouchSettings.MOVE_CONFIRM_DP, density)
+        tapTimeThreshold = settings.tapTimeMs
+        dragTimeThreshold = settings.holdDragMs
+        dragStartThreshold = settings.px(TeamViewerTouchSettings.DRAG_START_DP, density)
+        doubleTapHoldThreshold = settings.doubleTapHoldMs
+        doubleTapMovementThreshold = settings.px(TeamViewerTouchSettings.DOUBLE_TAP_AREA_DP, density)
+        cursorZoomExponent = settings.cursorZoomExponent
+        scrollZoomExponent = settings.scrollZoomExponent
+    }
+
     private val dragTimerRunnable = Runnable {
         // Check if someone already set move
         if (confirmedMove) {
@@ -201,7 +229,7 @@ class RelativeTouchContext(
         val scale = screenScale()
         val xDelta = TouchScaling.toScreenUnits(Math.abs(touchX - originalTouchX).toFloat(), scale)
         val yDelta = TouchScaling.toScreenUnits(Math.abs(touchY - originalTouchY).toFloat(), scale)
-        return xDelta <= TAP_MOVEMENT_THRESHOLD && yDelta <= TAP_MOVEMENT_THRESHOLD
+        return xDelta <= tapMovementThreshold && yDelta <= tapMovementThreshold
     }
 
     private fun isTap(eventTime: Long): Boolean {
@@ -217,7 +245,7 @@ class RelativeTouchContext(
         }
 
         val timeDelta = eventTime - originalTouchTime
-        return isWithinTapBounds(lastTouchX, lastTouchY) && timeDelta <= TAP_TIME_THRESHOLD
+        return isWithinTapBounds(lastTouchX, lastTouchY) && timeDelta <= tapTimeThreshold
     }
 
     private fun getMouseButtonIndex(): Byte {
@@ -273,7 +301,7 @@ class RelativeTouchContext(
                 val yDelta = TouchScaling.toScreenUnits(Math.abs(eventY - lastTapUpY).toFloat(), scale)
 
                 if (actionIndex == 0 && timeSinceLastTap <= DOUBLE_TAP_TIME_THRESHOLD &&
-                    xDelta <= DOUBLE_TAP_MOVEMENT_THRESHOLD && yDelta <= DOUBLE_TAP_MOVEMENT_THRESHOLD
+                    xDelta <= doubleTapMovementThreshold && yDelta <= doubleTapMovementThreshold
                 ) {
                     //  符合双击条件，取消第一次单击的发送，进入"待定"状态。
                     //  若最终确认为"双击按住"，第一击将不会发给主机
@@ -386,7 +414,7 @@ class RelativeTouchContext(
             val scale = screenScale()
             val xDelta = TouchScaling.toScreenUnits(Math.abs(eventX - originalTouchX).toFloat(), scale)
             val yDelta = TouchScaling.toScreenUnits(Math.abs(eventY - originalTouchY).toFloat(), scale)
-            if (xDelta > DRAG_START_THRESHOLD || yDelta > DRAG_START_THRESHOLD) {
+            if (xDelta > dragStartThreshold || yDelta > dragStartThreshold) {
                 //  用户移动了，说明是拖拽，取消"按住确认拖拽"计时器
                 cancelDoubleTapHoldTimer()
                 //  确认是双击拖拽（不向主机发送双击），此时才请求鼠标按下
@@ -414,14 +442,14 @@ class RelativeTouchContext(
                 deltaY = Math.round(Math.abs(deltaY) * yFactor * if (eventY < lastTouchY) -1 else 1).toInt()
                 // Model units are stream-area pixels, so no 1280 reference factor (spec 1.3 CM-03).
                 val cursorZoom = screenScale()
-                val cursorDx = TouchScaling.cursorDelta(eventX - lastTouchX, sense, cursorZoom, TouchScaling.CURSOR_ZOOM_EXPONENT)
-                val cursorDy = TouchScaling.cursorDelta(eventY - lastTouchY, sense, cursorZoom, TouchScaling.CURSOR_ZOOM_EXPONENT)
+                val cursorDx = TouchScaling.cursorDelta(eventX - lastTouchX, sense, cursorZoom, cursorZoomExponent)
+                val cursorDy = TouchScaling.cursorDelta(eventY - lastTouchY, sense, cursorZoom, cursorZoomExponent)
                 if (virtualCursor != null && pointerCount == 2) {
                     // Two-finger scroll sends the same remote distance for the same glass travel
                     // at every zoom, so the normalized delta gets the zoom back (spec 1.3 D8).
                     val zoom = screenScale()
-                    deltaX = TouchScaling.scrollDelta(eventX - lastTouchX, xFactor, zoom, TouchScaling.SCROLL_ZOOM_EXPONENT)
-                    deltaY = TouchScaling.scrollDelta(eventY - lastTouchY, yFactor, zoom, TouchScaling.SCROLL_ZOOM_EXPONENT)
+                    deltaX = TouchScaling.scrollDelta(eventX - lastTouchX, xFactor, zoom, scrollZoomExponent)
+                    deltaY = TouchScaling.scrollDelta(eventY - lastTouchY, yFactor, zoom, scrollZoomExponent)
                 }
 
                 if (pointerCount == 2) {
@@ -515,7 +543,7 @@ class RelativeTouchContext(
                 sendDragButtonDown()
             }
         }
-        handler.postDelayed(doubleTapHoldRunnable!!, DOUBLE_TAP_HOLD_TO_DRAG_THRESHOLD.toLong())
+        handler.postDelayed(doubleTapHoldRunnable!!, doubleTapHoldThreshold.toLong())
     }
 
     //  取消"按住确认拖拽"计时器的方法
@@ -526,7 +554,7 @@ class RelativeTouchContext(
 
     private fun startDragTimer() {
         cancelDragTimer()
-        handler.postDelayed(dragTimerRunnable, DRAG_TIME_THRESHOLD.toLong())
+        handler.postDelayed(dragTimerRunnable, dragTimeThreshold.toLong())
     }
 
     private fun cancelDragTimer() {
@@ -729,7 +757,7 @@ class RelativeTouchContext(
         distanceMoved += Math.sqrt(Math.pow((eventX - lastTouchX).toDouble(), 2.0) + Math.pow((eventY - lastTouchY).toDouble(), 2.0)).let {
             TouchScaling.toScreenUnits(it.toFloat(), screenScale()).toDouble()
         }
-        if (distanceMoved >= TAP_DISTANCE_THRESHOLD) {
+        if (distanceMoved >= tapDistanceThreshold) {
             confirmedMove = true
             cancelDragTimer()
         }

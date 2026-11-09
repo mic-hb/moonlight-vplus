@@ -28,7 +28,9 @@ import com.limelight.nvstream.input.MouseButtonPacket
 import com.limelight.nvstream.jni.MoonBridge
 import com.limelight.preferences.PreferenceConfiguration
 import com.limelight.ui.StreamView
+import com.limelight.preferences.TeamViewerTouchStore
 import com.limelight.utils.ClassifierConfig
+import com.limelight.utils.TeamViewerTouchSettings
 import com.limelight.utils.GestureDecision
 import com.limelight.utils.PinchScrollClassifier
 import com.limelight.utils.VirtualCursorModel
@@ -87,11 +89,13 @@ class TouchInputHandler(private val game: Game) {
     private var twoFingerStartY = 0f
 
     // TeamViewer style touch (spec 1.2). Built only when the preference is on (CL-08).
-    private val pinchScrollClassifier: PinchScrollClassifier by lazy {
-        PinchScrollClassifier(
-            ClassifierConfig.fromTouchSlop(ViewConfiguration.get(game).scaledTouchSlop.toFloat())
-        )
-    }
+    // Rebuilt at ACTION_DOWN only when the settings changed (spec 1.5 D6).
+    private var pinchScrollClassifier: PinchScrollClassifier = PinchScrollClassifier(
+        ClassifierConfig.fromTouchSlop(ViewConfiguration.get(game).scaledTouchSlop.toFloat())
+    )
+    private var appliedSettings: TeamViewerTouchSettings? = null
+    private var twoFingerTapThreshold = TWO_FINGER_TAP_THRESHOLD
+    private var twoFingerMoveThreshold = TWO_FINGER_MOVE_THRESHOLD
     // Preference value is read at ACTION_DOWN so a change applies from the next gesture.
     private var teamViewerGestureActive = false
     private var classifierRunning = false
@@ -582,7 +586,7 @@ class TouchInputHandler(private val game: Game) {
                         val coords = getNormalizedCoordinates(game.streamView, event.getX(actionIndex), event.getY(actionIndex))
 
                         if (multiFingerDownTime == 0L && event.pointerCount == 2 && !twoFingerMoved && game.prefConfig.touchscreenTrackpad) {
-                            if (event.eventTime - twoFingerDownTime < TWO_FINGER_TAP_THRESHOLD) {
+                            if (event.eventTime - twoFingerDownTime < twoFingerTapThreshold) {
                                 if (!game.isMouseMoveOnlyEnabled) {
                                     game.conn?.sendMouseButtonDown(MouseButtonPacket.BUTTON_RIGHT)
                                     game.conn?.sendMouseButtonUp(MouseButtonPacket.BUTTON_RIGHT)
@@ -603,7 +607,7 @@ class TouchInputHandler(private val game: Game) {
                                 (event.flags and MotionEvent.FLAG_CANCELED) == 0)
                         ) {
                             if (twoFingerTapPending && !twoFingerMoved && game.prefConfig.touchscreenTrackpad) {
-                                if (event.eventTime - firstFingerUpTime < TWO_FINGER_TAP_THRESHOLD) {
+                                if (event.eventTime - firstFingerUpTime < twoFingerTapThreshold) {
                                     if (!game.isMouseMoveOnlyEnabled) {
                                         game.conn?.sendMouseButtonDown(MouseButtonPacket.BUTTON_RIGHT)
                                         game.conn?.sendMouseButtonUp(MouseButtonPacket.BUTTON_RIGHT)
@@ -642,7 +646,7 @@ class TouchInputHandler(private val game: Game) {
                         if (event.pointerCount == 2 && !twoFingerMoved && game.prefConfig.touchscreenTrackpad) {
                             val dx = event.getX(0) - twoFingerStartX
                             val dy = event.getY(0) - twoFingerStartY
-                            if (sqrt(dx * dx + dy * dy) > TWO_FINGER_MOVE_THRESHOLD) {
+                            if (sqrt(dx * dx + dy * dy) > twoFingerMoveThreshold) {
                                 twoFingerMoved = true
                             }
                         }
@@ -680,12 +684,34 @@ class TouchInputHandler(private val game: Game) {
      * the event is fully handled here. Returning false lets the baseline contexts run, which is
      * also what happens for every event of a gesture decided SCROLL.
      */
+    /** Takes the stored values once for this gesture and hands them to the parts that use them (spec 1.5 ST-04). */
+    private fun applyTeamViewerSettings() {
+        val settings = TeamViewerTouchStore.get(game).snapshot()
+        val density = game.resources.displayMetrics.density
+        twoFingerTapThreshold = settings.twoFingerTapMs
+        twoFingerMoveThreshold = settings.px(TeamViewerTouchSettings.TWO_FINGER_MOVE_DP, density)
+        for (tc in relativeTouchContextMap) (tc as? RelativeTouchContext)?.applySettings(settings, density)
+        game.panZoomHandler.applySettings(settings)
+        if (settings != appliedSettings) {
+            appliedSettings = settings
+            pinchScrollClassifier = PinchScrollClassifier(
+                settings.toClassifierConfig(ViewConfiguration.get(game).scaledTouchSlop.toFloat())
+            )
+        }
+    }
+
     private fun handleTeamViewerStyleTouch(event: MotionEvent): Boolean {
         val action = event.actionMasked
         if (action == MotionEvent.ACTION_DOWN) {
             teamViewerGestureActive = game.prefConfig.teamViewerStyleTouch &&
                 game.prefConfig.touchscreenTrackpad
             endTeamViewerGesture()
+            if (teamViewerGestureActive) {
+                applyTeamViewerSettings()
+            } else {
+                twoFingerTapThreshold = TWO_FINGER_TAP_THRESHOLD
+                twoFingerMoveThreshold = TWO_FINGER_MOVE_THRESHOLD
+            }
         }
         if (!teamViewerGestureActive) return false
 
